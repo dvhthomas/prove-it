@@ -54,7 +54,15 @@ Then ask only what you actually need. Do NOT collect everything up front "just i
 
 **On user journeys: always confirm with the user, even if you can guess.** The user is the authority on what's worth proving. Recent context may suggest an obvious journey (the feature just shipped, the bug just fixed), but state your guess and get a thumbs-up before recording — do NOT silently start exploring on your own theory. A run on the wrong journey wastes time and burns disk.
 
-Acceptable phrasing: *"I'm planning to prove these journeys: (1) X, (2) Y. Sound right, or redirect me?"* — one batched message, not an interview.
+**Propose 3–5 concrete options, don't open-endedly ask.** Phrase each option as a real user moment, not a feature name. The user can pick one (or redirect) in seconds:
+
+> *"Which user journey should I prove? Pick whichever you actually care about — one is enough.*
+> - *A. "I'm writing markdown and want a link" — open a doc, type prose, hit Cmd-K, see the link snippet appear and tab through placeholders.*
+> - *B. "I forgot the shortcut and use the slash menu" — type `/`, see menu, pick `/image`, watch it expand.*
+> - *C. "Toolbar follows me as I switch block types" — click a text block, click a calc block, back and forth.*
+> - *D. Something else."*
+
+Concrete > abstract. "I'm writing markdown and want a link" beats "test the link insert feature".
 
 **Required only when the journey demands it** (ask only if the planned scenario actually hits this):
 
@@ -118,9 +126,12 @@ A scenario should: cover a complete user-visible outcome (not a single click), b
 
 Pick whatever drives the app, but you choose the *mode*:
 
-- **Web apps:** Playwright with `slowMo` + `recordVideo` + visible browser is the cleanest. The Chrome MCP gives stills but no continuous video — note that limitation in scenario notes if you fall back to it. Never headless.
+- **Web apps — preferred: drive the human's real Chrome via Chrome MCP** (`mcp__claude-in-chrome__*`). This is the *least magical* mode — the human watches their actual everyday browser do the work, can see it happen, can intervene. Capture stills with the MCP's screenshot tool; capture video by recording the visible browser window with `screencapture -V <duration> -v <out.mov>` (macOS) in a separate Bash call. The flakiness tradeoff (DOM-timing, contenteditable surprises) is worth the honesty.
+- **Web apps — fallback: Playwright with `headless: false` + visible window + `slowMo` + `recordVideo`.** Only if Chrome MCP isn't connected. Note in the scenario `notes` that you used a Playwright-spawned Chromium, not the human's browser. **Never headless under any circumstance** — that violates contract item 1 outright.
 - **Desktop apps (macOS):** `screencapture -V` for video, drive via `computer-use` MCP after `request_access`.
 - **TUIs:** `asciinema rec` for the session. Drive a real terminal app.
+
+The preference order for web apps is **honesty before reliability**. A flaky run on the user's real browser is better evidence than a clean run on a sandboxed simulacrum.
 
 Universal rules: **90 seconds max per video. 1280x720 max resolution.** 4–8 still screenshots at key moments. Number them in order (`01-…`, `02-…`).
 

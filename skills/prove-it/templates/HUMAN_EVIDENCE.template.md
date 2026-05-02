@@ -41,6 +41,15 @@ pnpm dev
 2.
 3.
 
+## Capture preferences
+
+<!-- Default: drive the user's real Chrome via Chrome MCP (least magical). Override here only if needed. -->
+
+- Driver: <!-- e.g. "Chrome MCP preferred (default)" or "Playwright OK" or "Playwright required because <reason>" -->
+- Viewport: <!-- e.g. 1280x720; that's the default -->
+- Video: <!-- yes | stills only -->
+- Other:
+
 ## Do NOT touch
 
 <!-- Anything destructive, anything with real-world side effects. -->
