@@ -52,6 +52,10 @@ Then ask only what you actually need. Do NOT collect everything up front "just i
 - How do I launch the app? (command, port, URL, or app path)
 - At least one user journey to prove. *One* is enough — you can always do more.
 
+**On user journeys: always confirm with the user, even if you can guess.** The user is the authority on what's worth proving. Recent context may suggest an obvious journey (the feature just shipped, the bug just fixed), but state your guess and get a thumbs-up before recording — do NOT silently start exploring on your own theory. A run on the wrong journey wastes time and burns disk.
+
+Acceptable phrasing: *"I'm planning to prove these journeys: (1) X, (2) Y. Sound right, or redirect me?"* — one batched message, not an interview.
+
 **Required only when the journey demands it** (ask only if the planned scenario actually hits this):
 
 - Test credentials — only if the scenario needs login. Reference where to find them, never paste secrets.
@@ -76,7 +80,9 @@ A permission prompt or "command not found" *mid-recording* corrupts the take. Up
 - For `computer-use`, call `request_access` for the target app now.
 - If you'll need Bash commands not yet allowlisted (`screencapture`, `asciinema`, `npx playwright`, `osascript`), ask the user to add them to `.claude/settings.json` in one batched message. The `update-config` skill can apply this.
 
-If anything's missing, stop and ask. Don't start a partial run.
+**Ask before installing.** If a needed tool is missing, do NOT install it silently. Many capture deps are heavy (Playwright browsers are 200–400 MB; asciinema-player vendoring; ffmpeg). State what's missing and the install size, and ask the user to confirm — or offer a smaller fallback (Chrome MCP instead of Playwright, stills-only instead of video). Especially do not auto-install when the user might prefer a different driver.
+
+If anything's missing, stop and ask. Don't start a partial run, and don't make multi-hundred-MB decisions on the user's behalf.
 
 ### 2.5 Launch the app under test
 
