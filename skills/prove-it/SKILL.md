@@ -268,6 +268,10 @@ Field guidance:
 
 The skill ships a self-contained HTML viewer at `templates/site/viewer.html` — one file with inline CSS and a tiny inline JS renderer. It reads its data from a `<script type="application/json" id="metadata">…</script>` block inside itself. **No server, no build step, no Python, no Node, no CDN.**
 
+The viewer is branded **Proof** in the UI (the page title, the nav logo, and the document title). The skill is still called `prove-it` but when you reference the artifact to the user, calling it "the Proof site" or "the Proof page" matches what they see on screen.
+
+The viewer renders scenarios as **tabs** — each scenario is its own tab/page within the viewer, not a long scroll. The first tab is active by default; permalinks (e.g. `#signup-happy-path`, `#signup-happy-path--video`, `#signup-happy-path--shot-02`) automatically activate the right tab and scroll to the inner anchor when the human pastes a link back. A "Things that need your attention" findings block above the tabs and a "What do you want me to do next?" prompt below them are cross-cutting — they don't live inside a single tab.
+
 To build a run's site:
 
 1. Copy the viewer to the run directory:
