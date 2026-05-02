@@ -258,19 +258,18 @@ Do not skip, substitute, hand-edit metadata, or "fix it real quick" before repor
 
 ## File layout
 
-In this skill:
+In this skill (also `~/.claude/skills/prove-it/` once installed via `git clone`):
 
 ```
 prove-it/
 ├── README.md
-├── .claude-plugin/plugin.json
-└── skills/prove-it/
-    ├── SKILL.md
-    ├── scripts/rotate.sh
-    └── templates/
-        ├── HUMAN_EVIDENCE.template.md
-        ├── metadata.example.json
-        └── site/viewer.html         # self-contained: inline CSS + inline JS renderer
+├── SKILL.md
+├── .claude-plugin/plugin.json       # optional plugin manifest
+├── scripts/rotate.sh
+└── templates/
+    ├── HUMAN_EVIDENCE.template.md
+    ├── metadata.example.json
+    └── site/viewer.html             # self-contained: inline CSS + inline JS renderer
 ```
 
 In the target project:

@@ -1,6 +1,6 @@
 # prove-it
 
-A Claude Code skill that proves an interactive UI works by **driving it at a human pace** through a real environment — a real browser, a real terminal, a real launchable app — and producing a self-contained static evidence site the human reviewer can open and scrub through.
+A Claude Code skill that proves an interactive UI works by **driving it at a human pace** through a real environment — a real browser, a real terminal, a real launchable app — and producing a self-contained static evidence site (the **Proof** viewer) the human reviewer can open and scrub through.
 
 > "I ran all the tests. Now let me prove a human will have the experience you expect."
 
@@ -25,41 +25,68 @@ It does **not** replace tests. It runs after them, on the same change.
 
 A directory at `<project>/prove-it/current/` with a self-contained `index.html`. Open it in any browser via `file://`. It contains:
 
-- A timeline of 2–5 user-journey scenarios.
-- For each scenario: a short narrative, key screenshots, and a short video.
+- A Table of Contents and 1–5 user-journey scenarios.
+- For each scenario: a short narrative, expected vs. observed (when relevant), key screenshots in an in-page carousel (←/→/Esc), and a short video.
 - Pass / needs-attention / fail status per scenario and overall.
+- Stable permalinks on every scenario, video, and screenshot for paste-back feedback.
 - Environment metadata (OS, browser, app version).
 
 The previous two runs are kept under `<project>/prove-it/archive/<timestamp>/`. Anything older is pruned automatically. `prove-it/current/` and `prove-it/archive/` are gitignored; only `HUMAN_EVIDENCE.md` is durable across runs.
 
 ## Install
 
-### As a Claude Code plugin
+User-level (available in every Claude Code session):
 
-Clone or symlink this repo into your Claude Code plugins directory, or reference it in your plugin marketplace configuration. The skill exposes itself as `prove-it`.
+```bash
+git clone https://github.com/dvhthomas/prove-it ~/.claude/skills/prove-it
+```
 
-### Standalone
+Project-level (only in one project):
 
-Copy `skills/prove-it/` into your project's `.claude/skills/` directory. The skill will be available in that project.
+```bash
+git clone https://github.com/dvhthomas/prove-it <project>/.claude/skills/prove-it
+```
+
+Restart your Claude Code session and `prove-it` will be available.
+
+## Update
+
+```bash
+git -C ~/.claude/skills/prove-it pull
+```
+
+## Pin to a version
+
+```bash
+git -C ~/.claude/skills/prove-it fetch --tags
+git -C ~/.claude/skills/prove-it checkout v0.2.0
+```
+
+Tags are listed at [github.com/dvhthomas/prove-it/tags](https://github.com/dvhthomas/prove-it/tags).
+
+## Uninstall
+
+```bash
+rm -rf ~/.claude/skills/prove-it
+```
 
 ## Files
 
 ```
 prove-it/
 ├── README.md                          # this file
-├── .claude-plugin/plugin.json         # plugin manifest
-└── skills/prove-it/
-    ├── SKILL.md                       # the skill itself — what the agent reads
-    ├── scripts/
-    │   └── rotate.sh                  # archive rotation (current + 2)
-    └── templates/
-        ├── HUMAN_EVIDENCE.template.md # starter for per-project context
-        ├── metadata.example.json      # schema reference
-        └── site/
-            └── viewer.html            # self-contained viewer: inline CSS + tiny inline JS renderer
+├── SKILL.md                           # the skill itself — what the agent reads
+├── .claude-plugin/plugin.json         # optional plugin manifest
+├── scripts/
+│   └── rotate.sh                      # archive rotation (current + 2)
+└── templates/
+    ├── HUMAN_EVIDENCE.template.md     # starter for per-project context
+    ├── metadata.example.json          # schema reference
+    └── site/
+        └── viewer.html                # self-contained viewer: inline CSS + inline JS renderer
 ```
 
-### How the site is built
+## How the site is built
 
 There is no build step. The agent:
 
