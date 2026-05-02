@@ -175,22 +175,63 @@ The skill ships `templates/site/viewer.html` — a single self-contained HTML fi
 
 The viewer is branded **Proof** in the UI — when reporting to the user, calling it "the Proof site" matches what they see. It renders a Table of Contents at the top (one row per scenario, with status pill + title + duration), then stacks scenarios as cards. Permalinks (`#slug`, `#slug--video`, `#slug--shot-NN`) jump to the right anchor with smooth scrolling and a brief highlight.
 
-### 7. Rotate the archive
+### 7. Rotate the archive — fresh runs only
 
-**Before** writing the new `current/`, run `scripts/rotate.sh <project>/prove-it 2`. It moves `current/` to `archive/<timestamp>/` and trims the archive to the newest 2 entries. Use the script — do not hand-roll `rm -rf`.
+**On a fresh run from scratch**, run `scripts/rotate.sh <project>/prove-it 2` *before* writing the new `current/`. It moves `current/` to `archive/<timestamp>/` and trims the archive to the newest 2 entries. Use the script — do not hand-roll `rm -rf`.
+
+**On iterative refinement** (see "Iterating within a run" below), do **not** rotate. Edit `current/` in place. Rotating between every refinement would fill the 2-archive cap with intermediate states and bury anything useful.
 
 ### 8. Report to the user
 
 Final message:
 
 - One sentence: what you proved.
-- Path: `prove-it/current/index.html`.
 - Any non-pass scenarios, called out explicitly.
 - Anything you couldn't prove and why.
-- If anything didn't pass: the viewer's bottom block asks them to choose **loop back** (you fix and re-run) or **summary only** (you stop). Wait for their answer.
 - The paste-back affordance: right-click `#` next to any item, copy link, paste with "expected X, this shows Y". You'll act on pinpoint feedback.
+- **End with the URL on its own line, ready to click** (see "Always share the URL").
+- If anything didn't pass: use `AskUserQuestion` to ask **loop back** vs **summary only** (see "Structured questions").
 
 Don't paste large logs. The site is the artifact.
+
+## Always share the URL
+
+**Every message that changes `current/`** — first run, refinement, fix, anything — ends with the URL on its own line, ready to click:
+
+```
+file:///<absolute-path>/prove-it/current/index.html
+```
+
+Or anchored at a specific finding:
+
+```
+file:///<absolute-path>/prove-it/current/index.html#fresh-doc-mixed-content
+```
+
+Sharing the URL once at run-start and expecting the human to remember it or scroll back is a failure. Re-share every iteration. The URL is the artifact's address; without it the artifact may as well not exist.
+
+## Iterating within a run
+
+After a first pass, the human often wants to add, refine, or remove scenarios. Treat these as **in-place edits to `current/`, not new runs**:
+
+- **Add**: capture new assets under `current/assets/<new-slug>/`, append to the `scenarios` array in the inline metadata block, re-save `index.html`.
+- **Refine**: replace assets for that slug, update its entry in the array in place.
+- **Remove**: `rm -rf current/assets/<slug>/`, drop the entry from the `scenarios` array, re-save.
+
+Do **not** rotate the archive between iterations — that fills the 2-archive cap with intermediate states fast. Rotate only on a fresh run-from-scratch.
+
+Re-share the URL at the end of every iteration message.
+
+## Structured questions — use AskUserQuestion
+
+Several decision points are multiple-choice, not open-ended. Use the `AskUserQuestion` tool for these — it gives the human a clean structured pick instead of a paragraph of prose to parse:
+
+- **Which journey to prove** — propose 3–5 concrete options as separate choices, each phrased as a user moment ("I'm writing markdown and want a link", not "test the link feature").
+- **Which driver** — Chrome MCP (default, drives your real browser) vs. Playwright (sandboxed Chromium fallback). Skip if `HUMAN_EVIDENCE.md` already records a preference.
+- **What next when something doesn't pass** — Loop back (I fix the underlying issue and re-run) vs. Summary only (I stop here, you decide).
+- **Add / refine / remove a scenario** after the human reviews a run.
+
+Reserve free-text prompts for when the answer truly is open (e.g. "what's the launch command?"). When the choice space is bounded, structure it.
 
 ## When something doesn't pass, ASK the human
 
