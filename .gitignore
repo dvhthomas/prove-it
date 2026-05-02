@@ -1,0 +1,14 @@
+# OS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+
+# Local dev
+.env
+.env.local

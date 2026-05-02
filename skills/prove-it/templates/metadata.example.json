@@ -1,0 +1,43 @@
+{
+  "run_id": "2026-05-02-1432",
+  "app": {
+    "name": "showme",
+    "version": "0.4.1",
+    "url_or_command": "http://localhost:3000"
+  },
+  "environment": {
+    "os": "macOS 15.4",
+    "browser": "Chromium 130 (Playwright)"
+  },
+  "scenarios": [
+    {
+      "slug": "signup-happy-path",
+      "title": "New user signs up and lands on dashboard",
+      "narrative": "Brand new user fills the signup form, confirms via the test inbox, lands on an empty dashboard.",
+      "status": "pass",
+      "duration_seconds": 47,
+      "video": "assets/signup-happy-path/video.webm",
+      "screenshots": [
+        { "file": "assets/signup-happy-path/01-landing.png", "caption": "Landing page" },
+        { "file": "assets/signup-happy-path/02-form.png", "caption": "Signup form filled" },
+        { "file": "assets/signup-happy-path/03-confirmation.png", "caption": "Confirmation email in MailHog" },
+        { "file": "assets/signup-happy-path/04-dashboard.png", "caption": "Empty dashboard after first login" }
+      ],
+      "notes": "Mistyped email once, corrected. No real email sent — used MailHog test inbox at :8025."
+    },
+    {
+      "slug": "create-first-project",
+      "title": "User creates their first project",
+      "narrative": "From the empty dashboard, user opens the New Project modal, names it, picks a template, and lands inside the project view.",
+      "status": "needs-attention",
+      "duration_seconds": 38,
+      "video": "assets/create-first-project/video.webm",
+      "screenshots": [
+        { "file": "assets/create-first-project/01-empty-state.png", "caption": "Dashboard empty state" },
+        { "file": "assets/create-first-project/02-modal.png", "caption": "New Project modal" },
+        { "file": "assets/create-first-project/03-project-view.png", "caption": "New project view" }
+      ],
+      "notes": "Modal stays open ~600ms after submit before closing — feels sluggish. Worth a look."
+    }
+  ]
+}

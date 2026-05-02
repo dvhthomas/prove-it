@@ -1,0 +1,12 @@
+{
+  "name": "prove-it",
+  "version": "0.1.0",
+  "description": "Prove an interactive UI works by driving it at human pace and producing a self-contained visual evidence site.",
+  "author": {
+    "name": "dvhthomas",
+    "url": "https://github.com/dvhthomas"
+  },
+  "homepage": "https://github.com/dvhthomas/prove-it",
+  "repository": "https://github.com/dvhthomas/prove-it",
+  "license": "MIT"
+}
