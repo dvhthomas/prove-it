@@ -364,12 +364,14 @@ code {
 .shot a { display: block; }
 .shot img {
   width: 100%;
-  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: contain;
   display: block;
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   transition: border-color 0.12s ease;
+  color: transparent; /* hides alt-text noise if a browser still renders it */
 }
 .shot a:hover img { border-color: var(--border-strong); }
 .shot:target img {
@@ -575,7 +577,8 @@ footer {
         var caption = esc(shot.caption || "");
         var sid = slug + "--shot-" + pad2(i + 1);
         html += '<figure class="shot" id="' + sid + '">';
-        html += '<a href="' + file + '" target="_blank"><img src="' + file + '" alt="' + caption + '" loading="lazy"></a>';
+        html += '<a href="' + file + '" target="_blank" aria-label="Open screenshot: ' + caption + '">';
+        html += '<img src="' + file + '" alt="" loading="lazy"></a>';
         html += '<figcaption><span>' + caption + "</span> " + permalink(sid, "screenshot") + "</figcaption>";
         html += "</figure>";
       });
