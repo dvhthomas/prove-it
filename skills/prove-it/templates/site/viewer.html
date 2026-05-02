@@ -14,10 +14,10 @@
   --text-muted: #6b7280;
   --accent: #4f46e5;
   --accent-light: #eef2ff;
-  --pass: #16a34a;
-  --pass-bg: #dcfce7;
-  --warn: #d97706;
-  --warn-bg: #fef3c7;
+  --pass: #15803d;
+  --pass-bg: #f0fdf4;
+  --warn: #b45309;
+  --warn-bg: #fffbeb;
   --fail: #dc2626;
   --fail-bg: #fee2e2;
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.04);
@@ -137,9 +137,9 @@ code {
   background: currentColor;
   opacity: 0.8;
 }
-.overall.status-pass { color: var(--pass); border-color: var(--pass-bg); background: var(--pass-bg); }
-.overall.status-warn { color: var(--warn); border-color: var(--warn-bg); background: var(--warn-bg); }
-.overall.status-fail { color: var(--fail); border-color: var(--fail-bg); background: var(--fail-bg); }
+.overall.status-pass { color: var(--pass); border-color: var(--border); background: var(--surface); }
+.overall.status-warn { color: var(--warn); border-color: var(--border); background: var(--surface); }
+.overall.status-fail { color: var(--fail); border-color: var(--fail); background: var(--fail-bg); font-weight: 600; }
 
 /* counts */
 .counts {
@@ -162,12 +162,12 @@ code {
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1;
-  color: var(--text);
+  color: var(--text-muted);
 }
 .count-label { font-size: 0.8rem; color: var(--text-muted); }
-.count-card.pass .count-num { color: var(--pass); }
-.count-card.warn .count-num { color: var(--warn); }
+/* Only the failed count gets a color — pass and needs-attention stay neutral. */
 .count-card.fail .count-num { color: var(--fail); }
+.count-card.fail { border-color: var(--fail-bg); }
 
 /* status pill */
 .status {
@@ -182,27 +182,28 @@ code {
   text-transform: uppercase;
   border: 1px solid transparent;
 }
-.status-pass { background: var(--pass-bg); color: var(--pass); }
-.status-warn { background: var(--warn-bg); color: var(--warn); }
-.status-fail { background: var(--fail-bg); color: var(--fail); }
+/* Pass and needs-attention are quiet — text color only, neutral surface. */
+.status-pass { background: var(--surface); color: var(--pass); border-color: var(--border); }
+.status-warn { background: var(--surface); color: var(--warn); border-color: var(--border); }
+/* Fail is the alarm — strong fill. */
+.status-fail { background: var(--fail-bg); color: var(--fail); border-color: var(--fail); }
 
-/* feedback hint */
+/* feedback hint — informational, neutral */
 .feedback-hint {
-  background: var(--accent-light);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 0.7rem 0.9rem;
   margin: 0 0 1.25rem;
   font-size: 0.88rem;
-  color: var(--text);
+  color: var(--text-muted);
 }
-.feedback-hint strong { color: var(--accent); font-weight: 600; }
+.feedback-hint strong { color: var(--text); font-weight: 600; }
 
-/* findings */
+/* findings — neutral surface; the status pills inside carry the signal */
 .findings {
-  background: var(--warn-bg);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--warn);
   border-radius: var(--radius);
   padding: 0.85rem 1.1rem;
   margin: 0 0 1.25rem;
@@ -211,17 +212,18 @@ code {
   font-size: 0.95rem;
   margin: 0 0 0.5rem;
   font-weight: 600;
+  color: var(--text-muted);
 }
 .findings ul { list-style: none; margin: 0; padding: 0; }
 .findings li {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  padding: 0.25rem 0;
+  padding: 0.3rem 0;
   font-size: 0.88rem;
   flex-wrap: wrap;
 }
-.findings li + li { border-top: 1px solid rgb(0 0 0 / 0.05); }
+.findings li + li { border-top: 1px solid var(--border); }
 .findings .observed { color: var(--text-muted); }
 
 /* TOC */
@@ -325,10 +327,10 @@ code {
   border-radius: var(--radius);
   background: var(--surface);
 }
-.exp { border-left: 3px solid var(--accent); }
-.exp strong { color: var(--accent); font-weight: 600; }
-.obs { border-left: 3px solid var(--warn); background: #fffdf7; }
-.obs strong { color: var(--warn); font-weight: 600; }
+.exp { border-left: 3px solid var(--border-strong); }
+.exp strong { color: var(--text); font-weight: 600; }
+.obs { border-left: 3px solid var(--text-muted); }
+.obs strong { color: var(--text); font-weight: 600; }
 
 /* video */
 .video-figure { margin: 0.85rem 0 1rem; scroll-margin-top: 5rem; }
@@ -387,17 +389,18 @@ code {
   gap: 0.25rem;
 }
 
-/* notes */
+/* notes — neutral, just a thin gray accent */
 .notes {
-  background: var(--warn-bg);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--warn);
+  border-left: 3px solid var(--border-strong);
   border-radius: var(--radius);
   padding: 0.6rem 0.85rem;
   margin: 0.85rem 0 0;
   font-size: 0.88rem;
+  color: var(--text-muted);
 }
-.notes strong { color: var(--warn); font-weight: 600; }
+.notes strong { color: var(--text); font-weight: 600; }
 
 /* permalink */
 .permalink {
@@ -416,11 +419,11 @@ code {
   text-decoration: none;
 }
 
-/* next step */
+/* next step — neutral; the question is about decision-making, not alarm */
 .next-step {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--warn);
+  border-left: 3px solid var(--border-strong);
   border-radius: var(--radius);
   padding: 1.1rem 1.4rem;
   margin: 0 0 1.5rem;
@@ -437,7 +440,7 @@ code {
   font-size: 0.92rem;
 }
 .next-step li { margin: 0.3rem 0; }
-.next-step strong { color: var(--accent); font-weight: 600; }
+.next-step strong { color: var(--text); font-weight: 600; }
 
 /* empty / error */
 .empty, .error { text-align: center; padding: 3rem 1rem; }
