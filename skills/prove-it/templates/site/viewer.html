@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prove It</title>
+<style>
+:root {
+  --black: #1a1a2e;
+  --white: #ffffff;
+  --bg: #faf9f6;
+  --accent: #7c3aed;
+  --accent-light: #ede9fe;
+  --warm: #ff8c42;
+  --warm-light: #fff3e6;
+  --text: #334155;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --shadow: 4px 4px 0 0 var(--black);
+  --shadow-sm: 2px 2px 0 0 var(--black);
+  --shadow-warm: 4px 4px 0 0 var(--warm);
+  --shadow-fail: 4px 4px 0 0 var(--fail);
+  --radius: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --pass: #16a34a;
+  --pass-bg: #dcfce7;
+  --warn: var(--warm);
+  --warn-bg: var(--warm-light);
+  --fail: #dc2626;
+  --fail-bg: #fee2e2;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.container {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1, h2, h3 { color: var(--black); line-height: 1.2; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 0.12rem 0.4rem;
+  border-radius: 3px;
+}
+
+.muted { color: var(--text-muted); }
+
+/* ── Nav ── */
+.site-nav {
+  background: var(--white);
+  border-bottom: 2px solid var(--black);
+  padding: 0.75rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.nav-logo {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--black);
+}
+.nav-logo:hover { text-decoration: none; }
+.nav-run {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ── Hero ── */
+.hero {
+  padding: 4rem 0 2.5rem;
+  text-align: center;
+}
+.hero h1 {
+  font-size: 3.25rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+}
+.hero .app-version {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-left: 0.5rem;
+}
+.hero-sub {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  margin: 0.5rem 0 0.5rem;
+}
+.hero .env {
+  font-size: 0.95rem;
+  margin: 0 0 1.5rem;
+}
+.overall {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  border: 2px solid var(--black);
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 1rem;
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+.overall.status-pass { background: var(--pass-bg); color: var(--pass); }
+.overall.status-warn { background: var(--warn-bg); color: var(--warn); }
+.overall.status-fail { background: var(--fail-bg); color: var(--fail); }
+
+/* ── Counts ── */
+.counts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+}
+.count-card {
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+.count-num {
+  display: block;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--black);
+}
+.count-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.35rem;
+}
+.count-card.pass .count-label { color: var(--pass); }
+.count-card.warn .count-label { color: var(--warn); }
+.count-card.fail .count-label { color: var(--fail); }
+
+/* ── Status pill ── */
+.status {
+  display: inline-block;
+  padding: 0.18rem 0.65rem;
+  border: 1.5px solid var(--black);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: var(--white);
+}
+.status-pass { background: var(--pass-bg); color: var(--pass); }
+.status-warn { background: var(--warn-bg); color: var(--warn); }
+.status-fail { background: var(--fail-bg); color: var(--fail); }
+
+/* ── Feedback hint ── */
+.feedback-hint {
+  background: var(--accent-light);
+  border: 2px solid var(--black);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.1rem;
+  margin: 0 0 1.5rem;
+  font-size: 0.92rem;
+  box-shadow: var(--shadow-sm);
+}
+.feedback-hint strong { color: var(--accent); }
+
+/* ── Findings ── */
+.findings {
+  background: var(--warm-light);
+  border: 2px solid var(--black);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  margin: 0 0 2rem;
+  box-shadow: var(--shadow-sm);
+}
+.findings h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.6rem;
+  font-weight: 800;
+}
+.findings ul { list-style: none; margin: 0; padding: 0; }
+.findings li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  font-size: 0.94rem;
+}
+.findings li + li { border-top: 1px dashed var(--border); }
+.findings .observed { color: var(--text-muted); }
+
+/* ── Scenarios ── */
+.scenarios { margin: 0 0 2.5rem; }
+.scenario {
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  margin: 0 0 1.5rem;
+  box-shadow: var(--shadow-sm);
+  scroll-margin-top: 5rem;
+}
+.scenario:target {
+  box-shadow: var(--shadow);
+}
+.scenario-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.5rem;
+}
+.scenario-head h2 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.scenario-head .duration {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.narrative {
+  margin: 0 0 1rem;
+  color: var(--text);
+}
+
+/* expected / observed */
+.exp-obs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin: 1rem 0;
+  font-size: 0.92rem;
+}
+@media (max-width: 700px) { .exp-obs { grid-template-columns: 1fr; } }
+.exp, .obs {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--black);
+  border-radius: var(--radius);
+}
+.exp { background: var(--accent-light); }
+.exp strong { color: var(--accent); }
+.obs { background: var(--warn-light); }
+.obs strong { color: var(--warm); }
+
+/* video */
+.video-figure { margin: 1rem 0 1.25rem; scroll-margin-top: 5rem; }
+.video-figure video {
+  width: 100%;
+  max-width: 56rem;
+  display: block;
+  background: var(--black);
+  border: 2px solid var(--black);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.video-figure figcaption {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* screenshots */
+.shots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 0.5rem 0 1rem;
+}
+.shot { margin: 0; scroll-margin-top: 5rem; }
+.shot a { display: block; }
+.shot img {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.shot a:hover img {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow);
+}
+.shot figcaption {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* notes */
+.notes {
+  background: var(--warm-light);
+  border: 2px solid var(--warm);
+  border-radius: var(--radius);
+  padding: 0.7rem 1rem;
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+}
+.notes strong { color: var(--warm); }
+
+/* permalink */
+.permalink {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.85em;
+  font-family: var(--font-mono);
+  text-decoration: none;
+  opacity: 0.4;
+  transition: opacity 0.12s ease, color 0.12s ease;
+  padding: 0 0.2rem;
+}
+.permalink:hover, .permalink:focus {
+  opacity: 1;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* next step */
+.next-step {
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  margin: 0 0 2rem;
+  box-shadow: var(--shadow-warm);
+}
+.next-step h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+}
+.next-step p { margin: 0.5rem 0; }
+.next-step ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+.next-step li { margin: 0.4rem 0; }
+.next-step strong { color: var(--accent); }
+
+/* empty / error */
+.empty, .error {
+  text-align: center;
+  padding: 3.5rem 1rem;
+}
+.empty h1, .error h1 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+}
+.empty p, .error p { color: var(--text-muted); max-width: 36rem; margin: 0 auto; }
+.empty code, .error code {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+.error p { color: var(--fail); }
+
+/* footer */
+footer {
+  border-top: 2px solid var(--border);
+  padding: 1.75rem 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.4rem; }
+  .hero { padding: 3rem 0 2rem; }
+  .counts { grid-template-columns: 1fr; }
+  .scenario { padding: 1.25rem 1.25rem; }
+  .scenario-head h2 { font-size: 1.1rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-nav">
+  <div class="container nav-inner">
+    <a href="#top" class="nav-logo">Prove It</a>
+    <span class="nav-run" id="navRun"></span>
+  </div>
+</header>
+
+<main id="top">
+  <div id="root"><div class="empty"><h1>Prove It</h1><p>Loading…</p></div></div>
+</main>
+
+<footer>
+  <div class="container">
+    <p>Generated by the <a href="https://github.com/dvhthomas/prove-it">Prove It</a> skill. Open this page directly via <code>file://</code> — no server required.</p>
+  </div>
+</footer>
+
+<script type="application/json" id="metadata">
+{
+  "_placeholder": true,
+  "run_id": "(not yet populated)",
+  "app": { "name": "Prove It viewer", "version": "", "url_or_command": "" },
+  "environment": { "os": "", "browser": "" },
+  "scenarios": []
+}
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var STATUS = {
+    "pass":            { cls: "pass", label: "Pass" },
+    "needs-attention": { cls: "warn", label: "Needs attention" },
+    "fail":            { cls: "fail", label: "Fail" }
+  };
+
+  function esc(s) {
+    if (s == null) return "";
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function permalink(anchor, label) {
+    return '<a class="permalink" href="#' + esc(anchor) + '" title="Copy link to this ' + esc(label) + '">#</a>';
+  }
+
+  function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+
+  function renderEmpty() {
+    return (
+      '<div class="empty">' +
+      '<h1>Prove It</h1>' +
+      '<p>This is the bare viewer template. Replace the JSON inside ' +
+      '<code>&lt;script type="application/json" id="metadata"&gt;</code> ' +
+      'with your run\'s real metadata, then reload.</p>' +
+      "</div>"
+    );
+  }
+
+  function render(meta) {
+    var scenarios = (meta && meta.scenarios) || [];
+    if (meta && meta._placeholder) return renderEmpty();
+    if (!scenarios.length) return renderEmpty();
+
+    var counts = { pass: 0, "needs-attention": 0, fail: 0 };
+    scenarios.forEach(function (s) {
+      if (counts[s.status] != null) counts[s.status]++;
+    });
+
+    var overall;
+    if (counts.fail) overall = { cls: "fail", label: counts.fail + " scenario(s) failed" };
+    else if (counts["needs-attention"]) overall = { cls: "warn", label: counts["needs-attention"] + " scenario(s) need attention" };
+    else overall = { cls: "pass", label: "All scenarios passed" };
+
+    var app = meta.app || {};
+    var env = meta.environment || {};
+    var hasIssues = counts.fail + counts["needs-attention"] > 0;
+
+    var navRun = document.getElementById("navRun");
+    if (navRun) navRun.textContent = meta.run_id ? "run · " + meta.run_id : "";
+
+    var html = "";
+
+    // Hero
+    html += '<section class="hero"><div class="container">';
+    html += "<h1>" + esc(app.name || "Prove It");
+    if (app.version) html += '<span class="app-version">' + esc(app.version) + "</span>";
+    html += "</h1>";
+    html += '<p class="hero-sub">run <code>' + esc(meta.run_id || "") + "</code></p>";
+    var envBits = [];
+    if (env.os) envBits.push(esc(env.os));
+    if (env.browser) envBits.push(esc(env.browser));
+    if (app.url_or_command) envBits.push("target <code>" + esc(app.url_or_command) + "</code>");
+    if (envBits.length) html += '<p class="env muted">' + envBits.join(" · ") + "</p>";
+    html += '<div class="overall status-' + overall.cls + '">' + esc(overall.label) + "</div>";
+    html += "</div></section>";
+
+    // Counts + feedback hint + findings
+    html += '<section><div class="container">';
+    html += '<div class="counts">';
+    html += '<div class="count-card pass"><span class="count-num">' + counts.pass + '</span><span class="count-label">Passed</span></div>';
+    html += '<div class="count-card warn"><span class="count-num">' + counts["needs-attention"] + '</span><span class="count-label">Needs attention</span></div>';
+    html += '<div class="count-card fail"><span class="count-num">' + counts.fail + '</span><span class="count-label">Failed</span></div>';
+    html += "</div>";
+
+    html += '<div class="feedback-hint"><strong>Want to give precise feedback?</strong> Right-click the <code>#</code> next to any scenario, video, or screenshot, copy the link, and paste it back into our conversation with what you expected.</div>';
+
+    if (hasIssues) {
+      html += '<div class="findings"><h2>Things that need your attention</h2><ul>';
+      scenarios.forEach(function (s) {
+        if (s.status === "pass") return;
+        var st = STATUS[s.status] || STATUS.pass;
+        var slug = esc(s.slug || "scenario");
+        var title = esc(s.title || s.slug || "Scenario");
+        var observed = s.observed ? '<span class="observed">— ' + esc(s.observed) + "</span>" : "";
+        html += '<li><span class="status status-' + st.cls + '">' + st.label + "</span>";
+        html += '<a href="#' + slug + '">' + title + "</a>" + observed + "</li>";
+      });
+      html += "</ul></div>";
+    }
+    html += "</div></section>";
+
+    // Scenarios
+    html += '<section class="scenarios"><div class="container">';
+    scenarios.forEach(function (s) {
+      var slug = esc(s.slug || "scenario");
+      var title = esc(s.title || s.slug || "Scenario");
+      var narrative = esc(s.narrative || "");
+      var notes = esc(s.notes || "");
+      var expected = esc(s.expected || "");
+      var observed = esc(s.observed || "");
+      var dur = (typeof s.duration_seconds === "number") ? Math.round(s.duration_seconds) + "s" : "";
+      var st = STATUS[s.status] || STATUS.pass;
+
+      html += '<article class="scenario" id="' + slug + '">';
+      html += '<header class="scenario-head">';
+      html += '<span class="status status-' + st.cls + '">' + st.label + "</span>";
+      html += "<h2>" + title + " " + permalink(slug, "scenario") + "</h2>";
+      if (dur) html += '<span class="duration">' + dur + "</span>";
+      html += "</header>";
+      if (narrative) html += '<p class="narrative">' + narrative + "</p>";
+
+      if (expected || observed) {
+        html += '<div class="exp-obs">';
+        if (expected) html += '<div class="exp"><strong>Expected:</strong> ' + expected + "</div>";
+        if (observed) html += '<div class="obs"><strong>Observed:</strong> ' + observed + "</div>";
+        html += "</div>";
+      }
+
+      if (s.video) {
+        var v = esc(s.video);
+        var vId = slug + "--video";
+        html += '<figure id="' + vId + '" class="video-figure">';
+        html += '<video controls preload="metadata" src="' + v + '">';
+        html += 'Your browser cannot play this video. Open <a href="' + v + '">' + v + "</a> directly.";
+        html += "</video>";
+        html += '<figcaption><span>Video</span> ' + permalink(vId, "video") + "</figcaption>";
+        html += "</figure>";
+      }
+
+      var shots = s.screenshots || [];
+      if (shots.length) {
+        html += '<div class="shots">';
+        shots.forEach(function (shot, i) {
+          var file = esc(shot.file || "");
+          var caption = esc(shot.caption || "");
+          var sid = slug + "--shot-" + pad2(i + 1);
+          html += '<figure class="shot" id="' + sid + '">';
+          html += '<a href="' + file + '" target="_blank"><img src="' + file + '" alt="' + caption + '" loading="lazy"></a>';
+          html += '<figcaption><span>' + caption + "</span> " + permalink(sid, "screenshot") + "</figcaption>";
+          html += "</figure>";
+        });
+        html += "</div>";
+      }
+
+      if (notes) html += '<p class="notes"><strong>Notes:</strong> ' + notes + "</p>";
+      html += "</article>";
+    });
+    html += "</div></section>";
+
+    if (hasIssues) {
+      var n = counts.fail + counts["needs-attention"];
+      html += '<section><div class="container">';
+      html += '<div class="next-step">';
+      html += "<h2>What do you want me to do next?</h2>";
+      html += "<p>" + n + " scenario(s) didn't pass cleanly. Two options:</p>";
+      html += "<ol>";
+      html += "<li><strong>Loop back</strong> — I take the failures and fix the underlying issues, then re-run this skill from scratch.</li>";
+      html += "<li><strong>Summary only</strong> — I write up what I found and stop, so you can decide what to do.</li>";
+      html += "</ol>";
+      html += '<p class="muted">For precise feedback, right-click the <code>#</code> next to any item above, copy the link, and paste it back with what you expected.</p>';
+      html += "</div></div></section>";
+    }
+
+    return html;
+  }
+
+  try {
+    var raw = document.getElementById("metadata").textContent;
+    var meta = JSON.parse(raw);
+    document.getElementById("root").innerHTML = render(meta);
+    if (meta && meta.app && meta.app.name && !meta._placeholder) {
+      document.title = "Prove It · " + meta.app.name + (meta.run_id ? " · " + meta.run_id : "");
+    }
+  } catch (e) {
+    document.getElementById("root").innerHTML =
+      '<div class="error"><h1>Prove It</h1><p>Failed to render metadata: ' +
+      String(e && e.message ? e.message : e).replace(/</g, "&lt;") + "</p></div>";
+  }
+})();
+</script>
+
+</body>
+</html>

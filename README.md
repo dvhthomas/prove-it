@@ -51,12 +51,22 @@ prove-it/
 └── skills/prove-it/
     ├── SKILL.md                       # the skill itself — what the agent reads
     ├── scripts/
-    │   ├── rotate.sh                  # archive rotation (current + 2)
-    │   └── build_site.py              # render index.html from metadata.json
+    │   └── rotate.sh                  # archive rotation (current + 2)
     └── templates/
         ├── HUMAN_EVIDENCE.template.md # starter for per-project context
-        └── metadata.example.json      # schema reference for the build script
+        ├── metadata.example.json      # schema reference
+        └── site/
+            └── viewer.html            # self-contained viewer: inline CSS + tiny inline JS renderer
 ```
+
+### How the site is built
+
+There is no build step. The agent:
+
+1. Copies `templates/site/viewer.html` to `<project>/prove-it/current/index.html`.
+2. Replaces the placeholder JSON inside the `<script type="application/json" id="metadata">…</script>` block with the run's real metadata.
+
+That's it. No Python, no Node, no static-site generator. The viewer reads its data from the inline `<script>` block and renders client-side. Open it via `file://` in any browser.
 
 ## License
 

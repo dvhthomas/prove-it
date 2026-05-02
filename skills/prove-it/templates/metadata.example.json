@@ -15,6 +15,8 @@
       "title": "New user signs up and lands on dashboard",
       "narrative": "Brand new user fills the signup form, confirms via the test inbox, lands on an empty dashboard.",
       "status": "pass",
+      "expected": "After confirming the email, the user lands on an empty dashboard with a 'Create your first project' CTA.",
+      "observed": "Matches expected.",
       "duration_seconds": 47,
       "video": "assets/signup-happy-path/video.webm",
       "screenshots": [
@@ -23,21 +25,41 @@
         { "file": "assets/signup-happy-path/03-confirmation.png", "caption": "Confirmation email in MailHog" },
         { "file": "assets/signup-happy-path/04-dashboard.png", "caption": "Empty dashboard after first login" }
       ],
-      "notes": "Mistyped email once, corrected. No real email sent — used MailHog test inbox at :8025."
+      "notes": "Mistyped the email once, corrected it. No real email sent — used MailHog test inbox at :8025."
     },
     {
       "slug": "create-first-project",
       "title": "User creates their first project",
       "narrative": "From the empty dashboard, user opens the New Project modal, names it, picks a template, and lands inside the project view.",
       "status": "needs-attention",
+      "expected": "After clicking 'Create', the modal closes immediately and the project view loads.",
+      "observed": "Modal stays open ~600ms after the success toast appears before closing. Feels sluggish; user hovers cursor as if confused.",
       "duration_seconds": 38,
       "video": "assets/create-first-project/video.webm",
       "screenshots": [
         { "file": "assets/create-first-project/01-empty-state.png", "caption": "Dashboard empty state" },
         { "file": "assets/create-first-project/02-modal.png", "caption": "New Project modal" },
-        { "file": "assets/create-first-project/03-project-view.png", "caption": "New project view" }
+        { "file": "assets/create-first-project/03-modal-lingering.png", "caption": "Modal still visible ~600ms after submit" },
+        { "file": "assets/create-first-project/04-project-view.png", "caption": "Project view finally loads" }
       ],
-      "notes": "Modal stays open ~600ms after submit before closing — feels sluggish. Worth a look."
+      "notes": "Worth a look — could be a missing close-on-success on the modal, or an accidental setTimeout."
+    },
+    {
+      "slug": "invite-collaborator",
+      "title": "User invites a collaborator by email",
+      "narrative": "From inside a project, user opens Share, enters a teammate email, sets role to Editor, and sends the invite.",
+      "status": "fail",
+      "expected": "After clicking 'Send invite', a toast confirms the invite was sent and the teammate appears in the Members list as 'Pending'.",
+      "observed": "Send button click registers, but no toast appears, no list update, and the modal does not close. Network tab shows the POST returned 500. The video shows the user clicking again in confusion.",
+      "duration_seconds": 52,
+      "video": "assets/invite-collaborator/video.webm",
+      "screenshots": [
+        { "file": "assets/invite-collaborator/01-share-modal.png", "caption": "Share modal opened" },
+        { "file": "assets/invite-collaborator/02-form-filled.png", "caption": "Email + Editor role filled" },
+        { "file": "assets/invite-collaborator/03-after-click.png", "caption": "After clicking Send — nothing changes" },
+        { "file": "assets/invite-collaborator/04-network-500.png", "caption": "DevTools showing POST /api/invite returned 500" }
+      ],
+      "notes": "Backend tests pass but the user-facing flow is broken. Recommend looking at the invite handler and adding a user-visible error toast for 5xx."
     }
   ]
 }
