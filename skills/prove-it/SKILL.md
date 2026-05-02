@@ -78,6 +78,30 @@ A permission prompt or "command not found" *mid-recording* corrupts the take. Up
 
 If anything's missing, stop and ask. Don't start a partial run.
 
+### 2.5 Launch the app under test
+
+The app must be running and reachable before you start scenarios. Most "the run hung" failures happen here.
+
+**Web app dev servers** (`npm run dev`, `pnpm dev`, `task dev`, vite, next dev, etc.):
+
+- Dev servers stay in foreground by design. Start them with the Bash tool's `run_in_background: true` flag. **Never run them in foreground** — the Bash call will hang waiting for the server to exit, which it never will. **Never use `&` inline** — that backgrounds the shell child but the call still hangs on stdout/stderr.
+- After starting, wait for the server to be ready before any driving. Two ways:
+  - **Preferred: `Monitor` tool on the background Bash shell.** Tail the dev server's stdout for the "ready" signal it prints (e.g. `Local:` from vite, `compiled successfully` from webpack). This catches readiness the moment it's announced and gives you log visibility for free.
+  - **Fallback: poll a health endpoint** in a separate foreground Bash call:
+
+    ```bash
+    until curl -sf http://localhost:3000/ > /dev/null 2>&1; do sleep 1; done
+    echo READY
+    ```
+
+  Be patient. Some dev servers (heavy bundlers, type-checkers, code generators on first run) take 30s–2min to come up. **Slow starts and hangs look identical from outside** — only the logs distinguish them. Watch the bg process logs (Monitor or `BashOutput`) before assuming hang. Stop and surface only on a real error in the log (`EADDRINUSE`, syntax error, missing dep), not on slowness.
+
+**Desktop apps:** Launch the binary, then verify the window is visible via a `computer-use` screenshot before driving. `request_access` for that app first.
+
+**TUIs:** Open a real terminal app via `computer-use`, navigate to the project, run the command. The terminal stays in foreground inside its own app — that's correct.
+
+When in doubt, the rule is: **don't start scenarios on an unreachable app**. A failed health check is not a nuisance; it's a signal something's wrong with the launch path.
+
 ### 3. Plan scenarios
 
 Pick 2–5 scenarios mapping to real user journeys. For each, write a one-line narrative *before* you run it. State the plan to the user in case they want to redirect.
