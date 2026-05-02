@@ -29,6 +29,10 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
 body {
   font-family: var(--font);
   background: var(--bg);
@@ -160,10 +164,7 @@ code {
   line-height: 1;
   color: var(--text);
 }
-.count-label {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
+.count-label { font-size: 0.8rem; color: var(--text-muted); }
 .count-card.pass .count-num { color: var(--pass); }
 .count-card.warn .count-num { color: var(--warn); }
 .count-card.fail .count-num { color: var(--fail); }
@@ -204,7 +205,7 @@ code {
   border-left: 3px solid var(--warn);
   border-radius: var(--radius);
   padding: 0.85rem 1.1rem;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.25rem;
 }
 .findings h2 {
   font-size: 0.95rem;
@@ -223,73 +224,70 @@ code {
 .findings li + li { border-top: 1px solid rgb(0 0 0 / 0.05); }
 .findings .observed { color: var(--text-muted); }
 
-/* tabs */
-.tabs-wrap {
-  position: relative;
-  margin: 0 0 1.25rem;
+/* TOC */
+.toc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.1rem;
+  margin: 0 0 1.5rem;
+  box-shadow: var(--shadow-sm);
 }
-.tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  scrollbar-width: thin;
+.toc h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+.toc ol {
+  list-style: none;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
-.tab {
-  flex: 0 0 auto;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 0.7rem 1rem;
-  font: inherit;
-  font-size: 0.88rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  display: inline-flex;
+.toc li {
+  display: grid;
+  grid-template-columns: 2rem auto 1fr auto;
   align-items: center;
-  gap: 0.45rem;
-  white-space: nowrap;
-  margin-bottom: -1px;
-  transition: color 0.12s ease, border-color 0.12s ease;
+  gap: 0.6rem;
+  padding: 0.45rem 0;
+  font-size: 0.92rem;
+  border-top: 1px solid var(--border);
 }
-.tab:hover { color: var(--text); }
-.tab.active {
-  color: var(--text);
-  border-bottom-color: var(--accent);
-  font-weight: 600;
-}
-.tab .dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex: 0 0 auto;
-}
-.tab .dot.pass { background: var(--pass); }
-.tab .dot.warn { background: var(--warn); }
-.tab .dot.fail { background: var(--fail); }
-.tab-index {
+.toc li:first-child { border-top: none; padding-top: 0.25rem; }
+.toc-num {
   font-family: var(--font-mono);
   font-size: 0.78rem;
   color: var(--text-muted);
 }
-.tab.active .tab-index { color: var(--accent); }
+.toc-link {
+  color: var(--text);
+  text-decoration: none;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.toc-link:hover { color: var(--accent); text-decoration: underline; }
+.toc-duration {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: right;
+}
 
-.panels { margin: 0 0 1.5rem; }
-.panel { display: none; }
-.panel.active { display: block; animation: fadein 0.15s ease; }
-@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
-
-/* scenario panel */
+/* scenarios */
+.scenarios { margin: 0 0 1.5rem; }
 .scenario {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.25rem 1.5rem;
+  margin: 0 0 1.25rem;
   box-shadow: var(--shadow-sm);
   scroll-margin-top: 5rem;
+}
+.scenario:target {
+  border-color: var(--accent);
+  box-shadow: var(--shadow), 0 0 0 3px var(--accent-light);
 }
 .scenario-head {
   display: flex;
@@ -350,6 +348,10 @@ code {
   align-items: center;
   gap: 0.25rem;
 }
+.video-figure:target video {
+  outline: 3px solid var(--accent-light);
+  outline-offset: 2px;
+}
 
 /* screenshots */
 .shots {
@@ -370,6 +372,10 @@ code {
   transition: border-color 0.12s ease;
 }
 .shot a:hover img { border-color: var(--border-strong); }
+.shot:target img {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
 .shot figcaption {
   font-size: 0.78rem;
   color: var(--text-muted);
@@ -457,6 +463,8 @@ footer {
   .hero h1 { font-size: 1.5rem; }
   .counts { grid-template-columns: 1fr; }
   .scenario { padding: 1rem 1.1rem; }
+  .toc li { grid-template-columns: 1.5rem auto 1fr; }
+  .toc-duration { display: none; }
 }
 </style>
 </head>
@@ -464,7 +472,7 @@ footer {
 
 <header class="site-nav">
   <div class="container nav-inner">
-    <a href="#" class="nav-logo">Proof</a>
+    <a href="#top" class="nav-logo">Proof</a>
     <span class="nav-run" id="navRun"></span>
   </div>
 </header>
@@ -523,7 +531,7 @@ footer {
     );
   }
 
-  function buildScenarioHTML(s) {
+  function renderScenario(s) {
     var slug = esc(s.slug || "scenario");
     var title = esc(s.title || s.slug || "Scenario");
     var narrative = esc(s.narrative || "");
@@ -617,14 +625,18 @@ footer {
     html += "</div></section>";
 
     html += '<section><div class="container">';
+
+    // counts
     html += '<div class="counts">';
     html += '<div class="count-card pass"><span class="count-num">' + counts.pass + '</span><span class="count-label">passed</span></div>';
     html += '<div class="count-card warn"><span class="count-num">' + counts["needs-attention"] + '</span><span class="count-label">need attention</span></div>';
     html += '<div class="count-card fail"><span class="count-num">' + counts.fail + '</span><span class="count-label">failed</span></div>';
     html += "</div>";
 
+    // feedback hint
     html += '<div class="feedback-hint"><strong>Want to give precise feedback?</strong> Right-click the <code>#</code> next to any scenario, video, or screenshot, copy the link, and paste it back into our conversation with what you expected.</div>';
 
+    // findings
     if (hasIssues) {
       html += '<div class="findings"><h2>Things that need your attention</h2><ul>';
       scenarios.forEach(function (s) {
@@ -639,28 +651,30 @@ footer {
       html += "</ul></div>";
     }
 
-    html += '<div class="tabs-wrap"><div class="tabs" role="tablist">';
+    // TOC
+    html += '<nav class="toc" aria-label="Scenarios"><h2>Scenarios</h2><ol>';
     scenarios.forEach(function (s, i) {
       var slug = esc(s.slug || "scenario-" + (i + 1));
       var title = esc(s.title || s.slug || "Scenario " + (i + 1));
+      var dur = (typeof s.duration_seconds === "number") ? Math.round(s.duration_seconds) + "s" : "";
       var st = STATUS[s.status] || STATUS.pass;
-      html += '<button class="tab" type="button" role="tab" data-slug="' + slug + '" id="tab-' + slug + '">';
-      html += '<span class="dot ' + st.cls + '"></span>';
-      html += '<span class="tab-index">' + pad2(i + 1) + '</span>';
-      html += '<span class="tab-title">' + title + "</span>";
-      html += "</button>";
+      html += "<li>";
+      html += '<span class="toc-num">' + pad2(i + 1) + "</span>";
+      html += '<span class="status status-' + st.cls + '">' + st.label + "</span>";
+      html += '<a class="toc-link" href="#' + slug + '">' + title + "</a>";
+      html += '<span class="toc-duration">' + (dur || "") + "</span>";
+      html += "</li>";
     });
-    html += "</div></div>";
+    html += "</ol></nav>";
 
-    html += '<div class="panels">';
-    scenarios.forEach(function (s, i) {
-      var slug = esc(s.slug || "scenario-" + (i + 1));
-      html += '<div class="panel" data-slug="' + slug + '" role="tabpanel" aria-labelledby="tab-' + slug + '">';
-      html += buildScenarioHTML(s);
-      html += "</div>";
+    // scenarios stacked
+    html += '<div class="scenarios">';
+    scenarios.forEach(function (s) {
+      html += renderScenario(s);
     });
     html += "</div>";
 
+    // next step
     if (hasIssues) {
       var n = counts.fail + counts["needs-attention"];
       html += '<div class="next-step">';
@@ -670,73 +684,12 @@ footer {
       html += "<li><strong>Loop back</strong> — I take the failures and fix the underlying issues, then re-run this skill from scratch.</li>";
       html += "<li><strong>Summary only</strong> — I write up what I found and stop, so you can decide what to do.</li>";
       html += "</ol>";
-      html += '<p class="muted">For precise feedback, right-click the <code>#</code> next to any item in a tab, copy the link, and paste it back with what you expected.</p>';
+      html += '<p class="muted">For precise feedback, right-click the <code>#</code> next to any item above, copy the link, and paste it back with what you expected.</p>';
       html += "</div>";
     }
 
     html += "</div></section>";
-
     return html;
-  }
-
-  function activateTab(slug, opts) {
-    opts = opts || {};
-    var tabs = document.querySelectorAll(".tab");
-    var panels = document.querySelectorAll(".panel");
-    if (!tabs.length) return;
-
-    var found = false;
-    tabs.forEach(function (t) {
-      var match = t.getAttribute("data-slug") === slug;
-      t.classList.toggle("active", match);
-      if (match) found = true;
-    });
-    panels.forEach(function (p) {
-      p.classList.toggle("active", p.getAttribute("data-slug") === slug);
-    });
-
-    if (!found && tabs[0]) {
-      tabs[0].classList.add("active");
-      if (panels[0]) panels[0].classList.add("active");
-      slug = tabs[0].getAttribute("data-slug");
-    }
-
-    var activeTab = document.querySelector(".tab.active");
-    if (activeTab && activeTab.scrollIntoView) {
-      activeTab.scrollIntoView({ block: "nearest", inline: "center" });
-    }
-
-    if (opts.subAnchor) {
-      requestAnimationFrame(function () {
-        var el = document.getElementById(opts.subAnchor);
-        if (el) el.scrollIntoView({ block: "start", behavior: "smooth" });
-      });
-    }
-  }
-
-  function syncFromHash() {
-    var raw = (location.hash || "").replace(/^#/, "");
-    if (!raw) {
-      var first = document.querySelector(".tab");
-      if (first) activateTab(first.getAttribute("data-slug"));
-      return;
-    }
-    var slug = raw.split("--")[0];
-    activateTab(slug, { subAnchor: raw !== slug ? raw : null });
-  }
-
-  function attachTabHandlers() {
-    document.querySelectorAll(".tab").forEach(function (t) {
-      t.addEventListener("click", function (e) {
-        e.preventDefault();
-        var slug = t.getAttribute("data-slug");
-        if (location.hash !== "#" + slug) {
-          history.replaceState(null, "", "#" + slug);
-        }
-        activateTab(slug);
-      });
-    });
-    window.addEventListener("hashchange", syncFromHash);
   }
 
   try {
@@ -746,8 +699,6 @@ footer {
     if (meta && meta.app && meta.app.name && !meta._placeholder) {
       document.title = "Proof · " + meta.app.name + (meta.run_id ? " · " + meta.run_id : "");
     }
-    attachTabHandlers();
-    syncFromHash();
   } catch (e) {
     document.getElementById("root").innerHTML =
       '<div class="error"><h1>Proof</h1><p>Failed to render metadata: ' +

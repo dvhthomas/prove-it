@@ -270,7 +270,7 @@ The skill ships a self-contained HTML viewer at `templates/site/viewer.html` —
 
 The viewer is branded **Proof** in the UI (the page title, the nav logo, and the document title). The skill is still called `prove-it` but when you reference the artifact to the user, calling it "the Proof site" or "the Proof page" matches what they see on screen.
 
-The viewer renders scenarios as **tabs** — each scenario is its own tab/page within the viewer, not a long scroll. The first tab is active by default; permalinks (e.g. `#signup-happy-path`, `#signup-happy-path--video`, `#signup-happy-path--shot-02`) automatically activate the right tab and scroll to the inner anchor when the human pastes a link back. A "Things that need your attention" findings block above the tabs and a "What do you want me to do next?" prompt below them are cross-cutting — they don't live inside a single tab.
+The viewer renders a **Table of Contents** at the top — one numbered link per scenario, with status pill, title, and duration — then stacks all scenarios as cards in a single scrollable page. Permalinks (e.g. `#signup-happy-path`, `#signup-happy-path--video`, `#signup-happy-path--shot-02`) jump to the right anchor with smooth scrolling and a brief highlight on the targeted element. A "Things that need your attention" findings block sits above the TOC, and a "What do you want me to do next?" prompt sits at the bottom — both cross-cut the run as a whole.
 
 To build a run's site:
 
