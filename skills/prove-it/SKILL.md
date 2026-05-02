@@ -1,230 +1,102 @@
 ---
 name: prove-it
-description: Use this skill to prove an interactive UI works the way a human would experience it. Trigger PROACTIVELY whenever you believe you are done with a significant chunk of UI/UX work (new screen, non-trivial flow change, redesign, user-visible bug fix) and tests pass — passing tests prove code correctness, not human experience. Also trigger when the user explicitly asks "prove to me that this is working", "show me it works", "demo this end to end", "verify the UX", or similar. Skip for backend-only changes, trivial tweaks (single copy/color change), or quick in-development sanity checks. The skill drives the app at human pace in a real environment (browser, terminal, OS), captures screenshots and videos of realistic interactions including 1–2 human-style mistakes per scenario, and produces a self-contained static evidence site the user opens in a browser. The site has stable permalinks on every scenario, video, and screenshot so the human can paste a link back with "I expected X here". When anything doesn't pass — including capture failures (blank screenshots, broken video, app crash mid-flow) — surface the findings to the human and ASK whether they want you to loop back and fix the underlying issue or just take a summary; do not assume.
+description: Use this skill to prove an interactive UI works the way a human would experience it — exploratory verification, not scripted testing. Trigger PROACTIVELY whenever you have just finished a significant chunk of UI/UX work (new screen, non-trivial flow change, redesign, user-visible bug fix) and tests pass — passing tests prove code correctness, not human experience. Also trigger on explicit asks like "prove to me that this is working", "show me it works", "demo this end to end", "verify the UX". Skip for backend-only changes, trivial copy/color tweaks, or in-development sanity checks. The skill forces you to drive the app at human pace in a real, visible environment (browser window, real terminal, launched app — never headless), capture video and screenshots of realistic interactions including 1–2 small human-style mistakes per scenario, and produce a self-contained static evidence site (the "Proof" viewer) the human opens in a browser. Every scenario, video, and screenshot has a stable permalink so the human can paste a link back with "I expected X here, this shows Y". When something doesn't pass — capture failure or in-flow misbehavior — record faithful evidence and ASK the human whether to loop back and fix, or stop with a summary. Do not assume.
 ---
 
 # prove-it
 
-You have been invoked to **prove that an interactive application works** — the way a careful human reviewer would prove it: by actually using the app at a human pace, in a real environment, and producing visual evidence the user can scrub through afterward.
+You have been invoked to **prove that an interactive application works** by *feeling your way through it as a human would.*
 
-This skill is **not** a substitute for unit or integration tests — those prove code correctness. This skill proves **product correctness**: the thing a human uses behaves the way a human expects.
+Drive the app at a human pace in a real, visible environment. Make the small mistakes a real person makes. Capture what you see. Show the human evidence they can scrub through and trust.
+
+## prove-it vs scripted tests
+
+Scripted tests (Playwright suites, Puppeteer specs, BubbleTea Videotape recordings) prove **invariants**: did selector X reach state Y. They run at machine speed, in headless or virtualized environments, and produce pass/fail signals.
+
+prove-it proves **experience**: what a curious human would conclude after using the app for a couple of minutes. Same underlying tools (you may even use Playwright as the driver) — totally different use mode. You are not writing assertions. You are *exploring*. You form judgments while interacting and write them into the evidence as `expected` vs `observed`.
+
+If a scripted test could prove what the user is asking, run the test. If they want to know "does this *feel* right when a person uses it?" — that is this skill.
 
 ## When to use
 
-### Proactively, when you think you are "done"
+Proactively, whenever you have just finished a significant chunk of UI/UX work and tests pass. Frame it: *"I ran all the tests and they pass. Now let me prove a human will have the experience the user expects."*
 
-Use this skill **whenever you believe you have finished a significant chunk of UI / UX work** — a new screen, a non-trivial flow change, a redesign, a bug fix that touches the user's experience — and your tests pass.
+Also when the user says: "prove to me that this is working", "show me it works", "demo this end to end", "verify the UX".
 
-Tests passing means the **code** does what you wrote. It does not mean a **human** will have the experience you (or the user) expect. Unit tests, component tests, and end-to-end suites (Playwright, Puppeteer, Videotape for BubbleTea, etc.) run at machine speed in sandboxed environments. They do not tell the story.
+Skip for backend-only changes, trivial UI tweaks (a copy edit, a color change), or quick in-dev sanity checks.
 
-Before declaring a UI / UX task done, frame it like this to yourself:
+## The contract — read this carefully
 
-> "I ran all the tests and they pass. Now let me prove that a human will have the experience the user expects."
+Three things you must do, no exceptions:
 
-Then run this skill.
+1. **Use a real, human-visible environment.** A real browser window the human could see (not headless). A real terminal the human could open. A real launched desktop app. If you find yourself reaching for a virtualized DOM, a sandbox, or a "fake browser", stop — that is not what this skill is for.
 
-### When the user explicitly asks
+2. **Move at human pace.** 300–800ms between discrete actions. 1–2s reading pause after any nontrivial state change (page load, modal, toast, async update). Type at ~80–180ms per character. Move the mouse, do not teleport. Hover before deciding on destructive buttons. Scroll if content is below the fold.
 
-Also use it when the user says any of:
+3. **Show your work to the human.** Produce the Proof viewer and verify it opens. The human reviews video and stills to confirm you actually behaved like a human. If the videos look robotic, you failed the contract — even if the app worked.
 
-- "prove to me that this is working"
-- "show me it works"
-- "demo this end to end"
-- "verify the UX"
-- "give me evidence the feature works"
-- "I want to see it actually run"
+## Quirky human mistakes — sparingly
 
-### When NOT to use
-
-- Backend-only changes with no user-visible UI affected — run tests instead.
-- Quick sanity checks during active development — the user can see their own screen.
-- Large unchanged areas of an app — only prove what was changed or what the user asked about.
-- Trivial UI tweaks (a copy change, a color adjustment) where a single screenshot in the conversation is enough.
-
-## Prerequisites and permissions — verify upfront, in one batch
-
-A permission prompt or "command not found" *mid-recording* pauses the run and may corrupt the take. Confirm everything you need before driving the app.
-
-### Tools by app type
-
-**Web apps — preferred path: Playwright**
-- `node` / `pnpm` / `npm` installed.
-- Playwright installed in the project: `pnpm add -D playwright` (or pip equivalent for Python projects).
-- Browsers downloaded: `npx playwright install chromium`.
-- Verify: `npx playwright --version`.
-
-**Web apps — fallback: Chrome MCP**
-- The `mcp__claude-in-chrome__*` tools are connected.
-- Verify: call `mcp__claude-in-chrome__list_connected_browsers`. If it returns no browsers, ask the user to install / connect the Chrome extension before continuing — do not silently fall through to a slower tier.
-- Note: Chrome MCP gives you stills but not continuous video.
-
-**Desktop apps (macOS)**
-- `screencapture` is built-in.
-- The terminal or IDE running Claude Code needs **Screen Recording** permission: System Settings → Privacy & Security → Screen Recording. Verify with a 1-second test: `screencapture -V 1 -v /tmp/prove-it-test.mov` and confirm the file is non-empty and not a solid black / grey rectangle.
-- The `computer-use` MCP must `request_access` for the target app **before any click**. Some apps are tier-restricted (browsers → "read", terminals/IDEs → "click"); use the appropriate higher-level MCP (claude-in-chrome, Bash) for those instead.
-
-**TUIs / terminals**
-- `asciinema` installed: `brew install asciinema`. Verify: `asciinema --version`.
-- Optional: `agg` to convert `.cast` to GIF for inline embedding. `brew install agg`.
-- For driving a real terminal at human pace via `computer-use`, the terminal app needs access. Note the tier-"click" restriction: you can click but not type, so keystrokes flow via `osascript -e 'tell application "System Events" to keystroke ...'` from a separate Bash shell.
-
-### Pre-allowlist Bash commands in settings
-
-A permission prompt during a recording is disruptive. Ask the user to add the entries your run needs to `.claude/settings.json` (or project `settings.local.json`) **before** starting:
-
-```json
-{
-  "permissions": {
-    "allow": [
-      "Bash(screencapture:*)",
-      "Bash(asciinema:*)",
-      "Bash(agg:*)",
-      "Bash(npx playwright:*)",
-      "Bash(node:*)",
-      "Bash(osascript:*)"
-    ]
-  }
-}
-```
-
-Trim the list to what you actually need. The `update-config` skill can apply this — suggest it to the user.
-
-### The preflight contract
-
-Before recording anything, run this preflight **once, batched**:
-
-1. List the tools and MCPs your planned scenarios need.
-2. Verify each one: version check, MCP connection check, screen-recording permission check (the 1-second test capture above).
-3. List the Bash commands you expect to invoke and check they are allowlisted.
-4. If anything is missing or unverified, stop and ask the user in **one** message what to install, what permissions to grant, and what to add to settings.json. Do not start a partial run.
-5. Once everything checks out, proceed to scenarios.
-
-If you discover mid-run that a tool is missing, that is a preflight bug — strengthen the preflight next time. Do not silently fall through to a degraded capture mode and call it done.
-
-## What you produce
-
-When you finish, the user can open a single HTML file in a browser and see:
-
-- A timeline of scenarios.
-- For each scenario: a short narrative, key screenshots, and a short video.
-- An overall pass / needs-attention / fail summary.
-- A timestamp and the environment used (browser version, OS, app version when known).
-
-The output lives at `<project>/prove-it/current/index.html`, with the previous two runs in `<project>/prove-it/archive/<timestamp>/`.
+Hard cap: **1–2 small recoveries per scenario.** Pick from: typo + backspace, wrong adjacent field click + retry, submit-without-required-field + see-error + fix, wrong nav link + back. Avoid mistakes in destructive flows, mistakes that surface unrelated bugs, mistakes in payment/auth, and stacking mistakes. More than that and the app looks broken.
 
 ## Workflow
 
 ### 1. Gather context
 
-Read the conversation. You may already know the app type, how to launch it, and what to verify.
+Read the conversation. Check `<project>/prove-it/HUMAN_EVIDENCE.md` if it exists — it has durable answers from prior runs.
 
-Then check for an existing `prove-it/HUMAN_EVIDENCE.md` in the project. **Read it first if it exists** — it contains durable answers from prior runs (test credentials, demo data, what NOT to touch).
+Then ask only what you actually need. Do NOT collect everything up front "just in case".
 
-If you cannot answer the following from context + HUMAN_EVIDENCE.md, ask the user **once, in a single batched question**, then save the answers to `prove-it/HUMAN_EVIDENCE.md` so future runs do not re-ask:
+**Truly required to start a run** (block on these — ask if missing):
 
 - How do I launch the app? (command, port, URL, or app path)
-- Are there test credentials I should use? (never store real production secrets)
-- Which 2–5 user journeys are most important to prove?
-- Is there demo / seed data I should rely on?
-- Anything I must NOT touch? (destructive actions, real billing, real outbound email, real-user data)
+- At least one user journey to prove. *One* is enough — you can always do more.
 
-Keep `HUMAN_EVIDENCE.md` short — bullet form, no narration. Redact secrets. The file is durable across runs and may be committed to source control, so do not put live credentials in it; reference how to obtain them instead ("see 1Password vault X" or "see .env.test").
+**Required only when the journey demands it** (ask only if the planned scenario actually hits this):
 
-### 2. Plan scenarios
+- Test credentials — only if the scenario needs login. Reference where to find them, never paste secrets.
+- Demo / seed data — only if the scenario needs pre-existing state.
+- "Don't touch" list — only if the scenario gets near destructive flows or real-world side effects.
 
-Pick 2–5 scenarios that map to real user journeys. For each scenario, write a one-line narrative *before* you run it (e.g., "New user signs up, gets confirmation email, lands on empty dashboard"). These narratives go into the evidence site.
+**Don't ask** (derive or ignore):
 
-A scenario should:
+- App version, OS, browser version — capture these from the environment yourself.
+- Project structure or how the code is organized — read the code.
+- Multiple journeys when one will get the run started — you can ask for more after you have something running.
+- Anything you can already see in `HUMAN_EVIDENCE.md`.
 
-- Cover a complete user-visible outcome, not a single click.
-- Be repeatable (no irreversible side effects unless explicitly approved by the user).
-- Take 30–90 seconds of wall-clock time at human pace.
+If the launch command and one journey are clear from context, **start the run**. Save anything new the user tells you to `HUMAN_EVIDENCE.md` so the next run doesn't re-ask.
 
-State the scenarios to the user before recording them, in case they want to redirect.
+### 2. Preflight — verify tools in one batch, before recording
 
-### 3. Run each scenario at human pace
+A permission prompt or "command not found" *mid-recording* corrupts the take. Up front:
 
-This is the part most agents get wrong. The proof is only convincing if the footage *looks* like a human used the app. Robot-speed automation — instant fills, teleporting clicks, sub-100 ms actions — undermines the evidence even when it works.
+- Verify the capture tools you'll use exist (e.g. `npx playwright --version`, `asciinema --version`, `which screencapture`).
+- On macOS, test screen recording with `screencapture -V 1 -v /tmp/test.mov` — if the file is a solid black/grey rectangle, Screen Recording permission is missing for the terminal/IDE running you.
+- For `computer-use`, call `request_access` for the target app now.
+- If you'll need Bash commands not yet allowlisted (`screencapture`, `asciinema`, `npx playwright`, `osascript`), ask the user to add them to `.claude/settings.json` in one batched message. The `update-config` skill can apply this.
 
-**Pace targets:**
+If anything's missing, stop and ask. Don't start a partial run.
 
-- 300–800 ms between discrete actions.
-- 1–2 second pause after any nontrivial state change (page load, modal open, async update) before acting again — this is "reading time".
-- Typing at ~80–180 ms per character, not all at once. Use whatever per-keystroke delay your driver supports (Playwright `page.keyboard.type(text, {delay: 120})`, computer-use `type` with realistic chunking).
+### 3. Plan scenarios
 
-**Realism:**
+Pick 2–5 scenarios mapping to real user journeys. For each, write a one-line narrative *before* you run it. State the plan to the user in case they want to redirect.
 
-- Move the mouse to the target before clicking; do not teleport.
-- Hover briefly over destructive buttons before deciding.
-- Scroll if content is below the fold rather than jumping to it.
-- Resize/move the window to a natural size before recording — not full screen, not 800x600.
+A scenario should: cover a complete user-visible outcome (not a single click), be repeatable (no irreversible side effects without approval), and take 30–90s at human pace.
 
-**Quirky human mistakes — sparingly. Hard cap: 1–2 small recoveries per scenario.**
+### 4. Capture evidence
 
-Pick at most one or two from this list, never more:
+Pick whatever drives the app, but you choose the *mode*:
 
-- Type one wrong character, backspace, type the correct one.
-- Click an adjacent wrong field, realize, click the right one.
-- Submit a form with an obviously empty required field, see the error, fix it.
-- Use the wrong nav link first, hit back.
-- Hover over the wrong menu item, then move to the right one.
+- **Web apps:** Playwright with `slowMo` + `recordVideo` + visible browser is the cleanest. The Chrome MCP gives stills but no continuous video — note that limitation in scenario notes if you fall back to it. Never headless.
+- **Desktop apps (macOS):** `screencapture -V` for video, drive via `computer-use` MCP after `request_access`.
+- **TUIs:** `asciinema rec` for the session. Drive a real terminal app.
 
-Avoid:
+Universal rules: **90 seconds max per video. 1280x720 max resolution.** 4–8 still screenshots at key moments. Number them in order (`01-…`, `02-…`).
 
-- Mistakes in destructive flows. Do not "accidentally" hit Delete.
-- Mistakes that surface bugs you were not asked to test — they confuse the evidence.
-- More than one mistake per minute of footage. Stacking mistakes makes the app look broken.
-- Mistakes in payment, auth, or anything with real-world side effects.
+### 5. Write metadata
 
-### 4. Capture the right evidence
-
-Pick capture tooling by environment.
-
-#### Web apps
-
-Prefer **Playwright** with video recording when you can install it:
-
-```js
-const browser = await chromium.launch({ slowMo: 250 });
-const context = await browser.newContext({
-  viewport: { width: 1280, height: 720 },
-  recordVideo: { dir: 'prove-it/current/assets/<scenario>/', size: { width: 1280, height: 720 } },
-});
-const page = await context.newPage();
-// ...interact, with page.waitForTimeout(...) between steps...
-await page.screenshot({ path: 'prove-it/current/assets/<scenario>/01-landing.png' });
-await context.close(); // flushes video
-await browser.close();
-```
-
-If Playwright is not available, fall back to:
-
-- **Chrome MCP** (`mcp__claude-in-chrome__*`) for DOM-aware interactions + `screenshot` / `preview_screenshot` calls at each step. This gives you stills but **not** continuous video. Note that limitation in the scenario narrative.
-- **Computer-use MCP** + `screencapture -V` (see Desktop below). Slower, more fragile, but works as a last resort.
-
-#### Desktop apps (macOS)
-
-- Video: `screencapture -V <duration_seconds> -v <out.mov>` records the screen for a fixed duration. Use a fresh terminal to start it just before driving the app.
-- Region screenshots: `screencapture -R x,y,w,h <out.png>`.
-- Window screenshot by ID: `screencapture -l <window-id> <out.png>` (resolve window id with `osascript` if needed).
-- Drive the app via the `computer-use` MCP. **Always `request_access` for the specific app first.** Some apps are tier-restricted (browsers, terminals, IDEs); use the appropriate higher-level MCP instead in those cases.
-
-#### TUIs / terminals
-
-- `asciinema rec <out.cast>` produces a replayable terminal recording. Embed via a vendored `asciinema-player` (no CDN) in the static site, or convert to a video with `agg out.cast out.gif` if you want a single inline asset.
-- For a final screenshot, capture the terminal window region with `screencapture`.
-- Bash tool typing happens instantly — for human-pace TUI demos, you must launch a real terminal app and drive it via `computer-use`, accepting the tier-"click" restriction (you can click but not type, so you may need to script keystrokes via `osascript -e 'tell app "System Events" to keystroke ...'` from a separate Bash shell).
-
-#### Universal capture rules
-
-- Cap each video at **90 seconds**. Long videos are unwatched.
-- Cap resolution at **1280x720** (or the app's natural window size at 1x). Do not record retina at 2x — files balloon 4x with no benefit on the static site.
-- Take **4–8 still screenshots per scenario** at key moments. Stills load instantly; videos are for the curious viewer.
-- Filename screenshots in order: `01-landing.png`, `02-signup-form-filled.png`, `03-confirmation.png`. The viewer renders them in the order you list them in metadata.
-
-### 5. Write the metadata
-
-For each scenario, build a metadata object. The viewer reads this directly from an inline `<script type="application/json" id="metadata">` block (see step 6). Schema:
+Build a metadata object the viewer will render. Schema:
 
 ```json
 {
@@ -235,158 +107,99 @@ For each scenario, build a metadata object. The viewer reads this directly from 
     {
       "slug": "signup-happy-path",
       "title": "New user signs up and lands on dashboard",
-      "narrative": "Brand new user fills the signup form, confirms via email link, lands on empty dashboard.",
+      "narrative": "Brand new user fills the form, confirms email, lands on empty dashboard.",
       "status": "pass",
-      "expected": "After confirming the email, the user lands on an empty dashboard with a 'Create your first project' CTA.",
+      "expected": "After confirming email, lands on empty dashboard with 'Create your first project' CTA.",
       "observed": "Matches expected.",
       "duration_seconds": 47,
       "video": "assets/signup-happy-path/video.webm",
       "screenshots": [
-        { "file": "assets/signup-happy-path/01-landing.png", "caption": "Landing page" },
-        { "file": "assets/signup-happy-path/02-form.png", "caption": "Signup form filled" }
+        { "file": "assets/signup-happy-path/01-landing.png", "caption": "Landing page" }
       ],
-      "notes": "Briefly typed wrong email, corrected. No real email sent — used MailHog test inbox."
+      "notes": "Mistyped email once, corrected. MailHog test inbox."
     }
   ]
 }
 ```
 
-`status` values:
+`status`: `pass` | `needs-attention` | `fail`. Always fill `expected` and `observed` for non-pass scenarios. The viewer renders them side-by-side.
 
-- `pass` — scenario completed, app behaved as expected.
-- `needs-attention` — completed, but you noticed something the user should look at (slow load, confusing copy, minor visual glitch).
-- `fail` — scenario could not be completed or app misbehaved.
+### 6. Build the site
 
-Field guidance:
+The skill ships `templates/site/viewer.html` — a single self-contained HTML file with inline CSS and a tiny inline JS renderer. **No build step. No Python. No Node. No CDN.**
 
-- `expected` and `observed` — when both are present, the viewer renders them side-by-side. Always fill both for `needs-attention` and `fail` scenarios. For clean `pass` scenarios you can omit them or write a one-liner like `"Matches expected."`.
-- `narrative` — one sentence describing the user journey, written before the run.
-- `notes` — anything specific about the run (mistakes you made on purpose, test data used, environmental quirks). Goes in a callout under the scenario.
-- `video` and `screenshots` — relative paths from the run directory (`current/`).
+1. `cp <skill-path>/templates/site/viewer.html <project>/prove-it/current/index.html`
+2. Replace the placeholder JSON inside `<script type="application/json" id="metadata">…</script>` with your real metadata (use the Edit tool — that block is the only thing you change).
+3. Open `current/index.html` to verify it renders.
 
-### 6. Build the static site
-
-The skill ships a self-contained HTML viewer at `templates/site/viewer.html` — one file with inline CSS and a tiny inline JS renderer. It reads its data from a `<script type="application/json" id="metadata">…</script>` block inside itself. **No server, no build step, no Python, no Node, no CDN.**
-
-The viewer is branded **Proof** in the UI (the page title, the nav logo, and the document title). The skill is still called `prove-it` but when you reference the artifact to the user, calling it "the Proof site" or "the Proof page" matches what they see on screen.
-
-The viewer renders a **Table of Contents** at the top — one numbered link per scenario, with status pill, title, and duration — then stacks all scenarios as cards in a single scrollable page. Permalinks (e.g. `#signup-happy-path`, `#signup-happy-path--video`, `#signup-happy-path--shot-02`) jump to the right anchor with smooth scrolling and a brief highlight on the targeted element. A "Things that need your attention" findings block sits above the TOC, and a "What do you want me to do next?" prompt sits at the bottom — both cross-cut the run as a whole.
-
-To build a run's site:
-
-1. Copy the viewer to the run directory:
-   ```bash
-   cp <skill-path>/templates/site/viewer.html <project>/prove-it/current/index.html
-   ```
-2. Replace the placeholder JSON inside `<script type="application/json" id="metadata">…</script>` with your run's real metadata (use the Edit tool — the placeholder block is the only thing you change).
-3. Confirm assets are in place: `<project>/prove-it/current/assets/<scenario-slug>/...`.
-4. Open `current/index.html` in the user's browser to verify it renders. Confirm the scenario count is right, the overall status pill matches, and at least one video plays.
-
-The viewer renders permalinks (`#<slug>`, `#<slug>--video`, `#<slug>--shot-NN`) on every scenario, video, and screenshot automatically. The human will use these to paste-back precise feedback.
-
-You may also keep `metadata.json` as a separate file alongside `index.html` for tooling — but the viewer reads only the inline block, so the inline copy is the source of truth.
+The viewer is branded **Proof** in the UI — when reporting to the user, calling it "the Proof site" matches what they see. It renders a Table of Contents at the top (one row per scenario, with status pill + title + duration), then stacks scenarios as cards. Permalinks (`#slug`, `#slug--video`, `#slug--shot-NN`) jump to the right anchor with smooth scrolling and a brief highlight.
 
 ### 7. Rotate the archive
 
-**Before** writing the new `current/`, run `scripts/rotate.sh <project>/prove-it 2`. It:
-
-- Moves `current/` to `archive/<YYYY-MM-DD-HHMM>/` if it exists.
-- Trims `archive/` to the newest 2 entries.
-
-Do not write your own `rm -rf` rotation in the moment. Use the script.
+**Before** writing the new `current/`, run `scripts/rotate.sh <project>/prove-it 2`. It moves `current/` to `archive/<timestamp>/` and trims the archive to the newest 2 entries. Use the script — do not hand-roll `rm -rf`.
 
 ### 8. Report to the user
 
-In your final message:
+Final message:
 
 - One sentence: what you proved.
-- Path to the evidence: `prove-it/current/index.html`.
-- Any scenario that failed or needed attention, called out explicitly.
-- Anything you could not prove and why (e.g., "did not test payment flow because no test card is configured in HUMAN_EVIDENCE.md").
-- If anything didn't pass cleanly, note that the viewer's "What do you want me to do next?" block at the bottom asks them to choose: **loop back** (you fix the underlying issues and re-run from scratch) or **summary only** (you stop and let them decide). Wait for their answer.
-- Tell them about the paste-back affordance: they can right-click the `#` next to any scenario, video, or screenshot and copy the link, then paste it into the conversation with what they expected ("this video should have shown X, instead I see Y"). You'll act on that pinpoint feedback.
+- Path: `prove-it/current/index.html`.
+- Any non-pass scenarios, called out explicitly.
+- Anything you couldn't prove and why.
+- If anything didn't pass: the viewer's bottom block asks them to choose **loop back** (you fix and re-run) or **summary only** (you stop). Wait for their answer.
+- The paste-back affordance: right-click `#` next to any item, copy link, paste with "expected X, this shows Y". You'll act on pinpoint feedback.
 
-Do not paste large logs. The site is the artifact.
+Don't paste large logs. The site is the artifact.
 
 ## When something doesn't pass, ASK the human
 
-Whenever a scenario does not pass cleanly — including capture failures (blank screenshots, broken video, app crash mid-flow), in-flow misbehavior (wrong copy, broken button, weird state), or anything that surprises you — record the partial evidence faithfully, then **ASK the human what to do next.** Do not unilaterally loop back into a fix attempt, and do not paper over the issue.
+Capture failure (blank screenshot, broken video, app crash), in-flow misbehavior, or anything surprising — record the partial evidence faithfully, mark the scenario `fail` or `needs-attention`, fill in `expected` and `observed`, and **stop.** The viewer's bottom block asks the human to choose loop-back or summary. Wait for their answer.
 
-Do **not**:
+Do not skip, substitute, hand-edit metadata, or "fix it real quick" before reporting. The capture failure is the signal — surfacing it is the job.
 
-- Skip the scenario and move on as if it passed.
-- Substitute a screenshot from a previous run, a mockup, or the design file.
-- Hand-edit metadata to claim the scenario passed.
-- Quietly drop a broken scenario from the report.
-- Decide on your own to "fix it real quick" before reporting back.
+## Disk hygiene
 
-Do:
-
-- Stop the run.
-- Record the scenario in metadata with status `fail` (capture failure or app misbehavior) or `needs-attention` (worked but felt wrong), with whatever evidence you actually got.
-- Fill in the `expected` and `observed` fields so the viewer renders "what should have happened" vs "what did happen" side by side.
-- The viewer's bottom "What do you want me to do next?" block presents the human with two options: **loop back** (you fix the underlying issues and re-run from scratch) or **summary only** (you stop). Wait for their choice — do not assume.
-- The viewer's permalinks let the human respond precisely — they can paste a link to a specific video or screenshot back to you with "I expected X here, this shows Y". Be ready to act on that pinpoint feedback.
-
-The whole point of this skill is to surface problems a human would notice that machine tests miss. When that signal arrives, honor it: faithful evidence, clear ask, then wait.
-
-## Disk hygiene — non-negotiable
-
-Videos consume disk fast. The rotation rule (current + 2 archives) is firm.
-
-- Total `prove-it/` per project: soft cap **500 MB**. If a run would exceed it, drop video resolution, duration, or scenario count before adding more.
-- Add `prove-it/current/` and `prove-it/archive/` to `.gitignore`. **Never** commit them.
-- `prove-it/HUMAN_EVIDENCE.md` is the **exception** — it is durable, useful, and may be committed (with secrets redacted). Add it to git deliberately.
-
-If you find pre-existing `prove-it/` directories that look stale (e.g., months old, hundreds of MB), surface this to the user before deleting — it may belong to other tooling.
+- Soft cap: 500 MB total per project's `prove-it/`. If a run would exceed it, drop video duration, resolution, or scenario count.
+- Gitignore `prove-it/current/` and `prove-it/archive/`. Never commit them.
+- `prove-it/HUMAN_EVIDENCE.md` is the exception — it is durable and may be committed (with secrets redacted).
+- Rotation cap (current + 2 archives) is firm. The script enforces it.
 
 ## Anti-patterns
 
-- **Headless puppeteering at robot speed with no video.** The user cannot tell whether the app rendered correctly. The whole point is human-believable evidence.
-- **"I ran the tests and they passed."** Tests are not the evidence the user asked for. Run the app.
-- **One 12-minute video per scenario.** If a scenario takes 12 minutes, it is the wrong scenario. Break it up.
-- **A fancy SPA evidence site with a build step.** The shipped viewer is a single HTML file with inline CSS + a tiny inline renderer. Don't replace it with React, a static-site generator, or anything that requires a build chain — the user must be able to open the file directly via `file://`.
-- **Skipping the preflight check.** A "command not found" or permission prompt mid-recording wastes the take. Verify tools, MCPs, screen-recording permission, and Bash allowlist entries upfront, in one batched message to the user.
-- **Stacking 5 deliberate mistakes per scenario.** The user will think the app is broken.
-- **Asking the user 8 questions up front.** Batch them. Lean on context first. Save answers in HUMAN_EVIDENCE.md.
-- **Reusing screenshots from a prior run.** Always re-capture. The point is *this* run is real.
-- **Making real-world side effects** (sending real email, charging real cards, posting to real Slack, deleting real records) without explicit per-scenario user approval. When in doubt, stop and ask.
-- **Working around a capture failure** by skipping the scenario, hand-editing metadata, or substituting old / mocked assets. A capture failure is the loudest signal this skill produces — record it faithfully and ask the human what to do.
-- **Deciding for the human when something fails.** Don't unilaterally loop back into a fix attempt. The viewer asks the human "loop back or summary only?" — wait for their answer.
+- **Headless. Robot speed. No video.** Violates the contract. The user can't tell what a human would see.
+- **Writing assertions instead of exploring.** prove-it is feel-it-out, not scripted.
+- **Asking everything up front.** Block only on launch command + one journey. Ask for more only when the scenario demands it.
+- **Stacking 5 mistakes per scenario.** Hard cap is 1–2.
+- **Working around a capture failure** by skipping, hand-editing, or substituting old assets — and especially **deciding for the human** to "loop back and fix" without asking.
+- **Real-world side effects** (real email, real charges, real Slack) without explicit per-scenario approval.
+- **Replacing the shipped viewer** with a build-step SPA. It's one HTML file for a reason.
 
-## File layout reference
+## File layout
 
-In the prove-it repo (this skill):
+In this skill:
 
 ```
 prove-it/
 ├── README.md
-├── .claude-plugin/
-│   └── plugin.json
-└── skills/
-    └── prove-it/
-        ├── SKILL.md                 # this file
-        ├── scripts/
-        │   └── rotate.sh
-        └── templates/
-            ├── HUMAN_EVIDENCE.template.md
-            ├── metadata.example.json
-            └── site/
-                └── viewer.html      # self-contained: inline CSS + inline JS renderer
+├── .claude-plugin/plugin.json
+└── skills/prove-it/
+    ├── SKILL.md
+    ├── scripts/rotate.sh
+    └── templates/
+        ├── HUMAN_EVIDENCE.template.md
+        ├── metadata.example.json
+        └── site/viewer.html         # self-contained: inline CSS + inline JS renderer
 ```
 
-In the **target** project (where you are proving things):
+In the target project:
 
 ```
-<project>/
-└── prove-it/
-    ├── HUMAN_EVIDENCE.md            # durable, may be committed
-    ├── current/                     # latest run, gitignored
-    │   ├── index.html               # copy of viewer.html with metadata injected
-    │   └── assets/<scenario>/
-    │       ├── video.webm
-    │       └── *.png
-    └── archive/                     # last 2 runs, gitignored
-        ├── 2026-04-30-1015/
-        └── 2026-04-28-0902/
+<project>/prove-it/
+├── HUMAN_EVIDENCE.md                 # durable, may be committed
+├── current/                          # latest run, gitignored
+│   ├── index.html                    # viewer.html with metadata injected
+│   └── assets/<scenario-slug>/{video,*.png}
+└── archive/                          # last 2 runs, gitignored
+    ├── 2026-04-30-1015/
+    └── 2026-04-28-0902/
 ```
