@@ -118,9 +118,9 @@ When in doubt, the rule is: **don't start scenarios on an unreachable app**. A f
 
 ### 3. Plan scenarios
 
-Pick 2–5 scenarios mapping to real user journeys. For each, write a one-line narrative *before* you run it. State the plan to the user in case they want to redirect.
+Pick **1–5 scenarios** mapping to real user journeys. **Depth beats breadth** — one rich journey that exposes a real product question (typing through a feature the way a curious user would) is better than five shallow click-throughs. State the plan to the user in case they want to redirect.
 
-A scenario should: cover a complete user-visible outcome (not a single click), be repeatable (no irreversible side effects without approval), and take 30–90s at human pace.
+A scenario should: cover a complete user-visible outcome (not a single click), be repeatable (no irreversible side effects without approval), and take 30–90s at human pace. For each, write a one-line narrative *before* you run it.
 
 ### 4. Capture evidence
 
