@@ -1,7 +1,7 @@
 {
   "run_id": "2026-05-02-1432",
   "app": {
-    "name": "showme",
+    "name": "acme-app",
     "version": "0.4.1",
     "url_or_command": "http://localhost:3000"
   },
@@ -33,7 +33,8 @@
       "narrative": "From the empty dashboard, user opens the New Project modal, names it, picks a template, and lands inside the project view.",
       "status": "needs-attention",
       "expected": "After clicking 'Create', the modal closes immediately and the project view loads.",
-      "observed": "Modal stays open ~600ms after the success toast appears before closing. Feels sluggish; user hovers cursor as if confused.",
+      "observed": "The success toast appeared but the modal stayed on screen for ~600ms before closing. I hovered the cursor as if confused while waiting.",
+      "hypothesis": "Modal close-on-success isn't tied to the same event as the toast — likely a stale setTimeout or a missing dispatch in the New Project modal's submit handler. Look at the modal's onSubmit path.",
       "duration_seconds": 38,
       "video": "assets/create-first-project/video.webm",
       "screenshots": [
@@ -42,7 +43,7 @@
         { "file": "assets/create-first-project/03-modal-lingering.png", "caption": "Modal still visible ~600ms after submit" },
         { "file": "assets/create-first-project/04-project-view.png", "caption": "Project view finally loads" }
       ],
-      "notes": "Worth a look — could be a missing close-on-success on the modal, or an accidental setTimeout."
+      "notes": ""
     },
     {
       "slug": "invite-collaborator",
@@ -50,7 +51,8 @@
       "narrative": "From inside a project, user opens Share, enters a teammate email, sets role to Editor, and sends the invite.",
       "status": "fail",
       "expected": "After clicking 'Send invite', a toast confirms the invite was sent and the teammate appears in the Members list as 'Pending'.",
-      "observed": "Send button click registers, but no toast appears, no list update, and the modal does not close. Network tab shows the POST returned 500. The video shows the user clicking again in confusion.",
+      "observed": "Clicking Send did nothing visible — no toast, no list update, no modal close. I clicked again, still nothing. No on-screen error.",
+      "hypothesis": "Invite POST is failing silently with no user-visible error. DevTools showed POST /api/invite returned 500. Two issues: the backend handler is broken AND the frontend swallows the error instead of surfacing a toast for 5xx responses.",
       "duration_seconds": 52,
       "video": "assets/invite-collaborator/video.webm",
       "screenshots": [
@@ -59,7 +61,7 @@
         { "file": "assets/invite-collaborator/03-after-click.png", "caption": "After clicking Send — nothing changes" },
         { "file": "assets/invite-collaborator/04-network-500.png", "caption": "DevTools showing POST /api/invite returned 500" }
       ],
-      "notes": "Backend tests pass but the user-facing flow is broken. Recommend looking at the invite handler and adding a user-visible error toast for 5xx."
+      "notes": "Backend tests pass but the user-facing flow is broken."
     }
   ]
 }

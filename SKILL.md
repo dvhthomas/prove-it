@@ -1,6 +1,6 @@
 ---
 name: prove-it
-description: Use this skill to prove an interactive UI works the way a human would experience it — exploratory verification, not scripted testing. Trigger PROACTIVELY whenever you have just finished a significant chunk of UI/UX work (new screen, non-trivial flow change, redesign, user-visible bug fix) and tests pass — passing tests prove code correctness, not human experience. Also trigger on explicit asks like "prove to me that this is working", "show me it works", "demo this end to end", "verify the UX". Skip for backend-only changes, trivial copy/color tweaks, or in-development sanity checks. The skill forces you to drive the app at human pace in a real, visible environment (browser window, real terminal, launched app — never headless), capture video and screenshots of realistic interactions including 1–2 small human-style mistakes per scenario, and produce a self-contained static evidence site (the "Proof" viewer) the human opens in a browser. Every scenario, video, and screenshot has a stable permalink so the human can paste a link back with "I expected X here, this shows Y". When something doesn't pass — capture failure or in-flow misbehavior — record faithful evidence and ASK the human whether to loop back and fix, or stop with a summary. Do not assume.
+description: Use this skill to prove an interactive UI works the way a human would experience it — exploratory verification, not scripted testing. Trigger PROACTIVELY whenever you have just finished a significant chunk of UI/UX work (new screen, non-trivial flow change, redesign, user-visible bug fix) and tests pass — passing tests prove code correctness, not human experience. Also trigger on explicit asks like "prove to me that this is working", "show me it works", "demo this end to end", "verify the UX". Skip for backend-only changes, trivial copy/color tweaks, or in-development sanity checks. The skill forces you to drive the app at human pace in a real, visible environment (browser window, real terminal, launched app — never headless), capture video and screenshots of realistic interactions including 1–2 small human-style mistakes per scenario, and produce a self-contained static evidence site (the "Prove It" viewer) the human opens in a browser. Every scenario, video, and screenshot has a stable permalink so the human can paste a link back with "I expected X here, this shows Y". When something doesn't pass — capture failure or in-flow misbehavior — record faithful evidence and ASK the human whether to loop back and fix, or stop with a summary. Do not assume.
 ---
 
 # prove-it
@@ -33,7 +33,7 @@ Three things you must do, no exceptions:
 
 2. **Move at human pace.** 300–800ms between discrete actions. 1–2s reading pause after any nontrivial state change (page load, modal, toast, async update). Type at ~80–180ms per character. Move the mouse, do not teleport. Hover before deciding on destructive buttons. Scroll if content is below the fold.
 
-3. **Show your work to the human.** Produce the Proof viewer and verify it opens. The human reviews video and stills to confirm you actually behaved like a human. If the videos look robotic, you failed the contract — even if the app worked.
+3. **Show your work to the human.** Produce the Prove It viewer and verify it opens. The human reviews video and stills to confirm you actually behaved like a human. If the videos look robotic, you failed the contract — even if the app worked.
 
 ## Quirky human mistakes — sparingly
 
@@ -135,14 +135,23 @@ The preference order for web apps is **honesty before reliability**. A flaky run
 
 Universal rules: **90 seconds max per video. 1280x720 max resolution.** 4–8 still screenshots at key moments. Number them in order (`01-…`, `02-…`).
 
-### 5. Write metadata
+### 5. Write metadata — action, expected, observed, hypothesis
 
-Build a metadata object the viewer will render. Schema:
+prove-it is a structured experiment from the human's chair. Each scenario has four signals the viewer renders as numbered steps in this order. **Keep them clean — do not let them bleed into each other.**
+
+1. **Action** (`narrative`) — what you set out to do, in user-journey terms. "From the empty dashboard, opens the New Project modal, names it, picks a template."
+2. **Expected** (`expected`) — what you expected to see as a human. The bar you're measuring against.
+3. **Observed** (`observed`) — *purely what a human saw on screen.* User-visible signals only. "The chip shifted right ~10px when I switched modes." "I hovered confused for ~600ms after the toast appeared." If it required reading source, opening devtools, or inferring from logs, **it does not belong here.**
+4. **Hypothesis** (`hypothesis`, required for `needs-attention` and `fail`) — your causal explanation for what you observed, framed as speculation. May reference code surface ("DescriptorRenderer in the cm6-mirror widget likely doesn't mirror CalcLine.svelte's preview output"), devtools signals ("the POST returned 500 in the network tab"), or whatever you inferred. **Lead with the noun phrase of the suspected cause** so the human can scan it. The viewer renders this prominently with a status-colored heading, and the TUI uses it to phrase the per-finding fix options.
+
+If `observed` reads like a code review or a stack trace, you've crossed the lane line — move that text to `hypothesis` and rewrite `observed` from your eyes.
+
+Schema:
 
 ```json
 {
   "run_id": "2026-05-02-1432",
-  "app": { "name": "showme", "version": "0.4.1", "url_or_command": "http://localhost:3000" },
+  "app": { "name": "acme-app", "version": "0.4.1", "url_or_command": "http://localhost:3000" },
   "environment": { "os": "macOS 15.4", "browser": "Chromium 130 (Playwright)" },
   "scenarios": [
     {
@@ -158,22 +167,69 @@ Build a metadata object the viewer will render. Schema:
         { "file": "assets/signup-happy-path/01-landing.png", "caption": "Landing page" }
       ],
       "notes": "Mistyped email once, corrected. MailHog test inbox."
+    },
+    {
+      "slug": "create-first-project",
+      "title": "User creates their first project",
+      "narrative": "From the empty dashboard, opens New Project modal, names it, picks a template.",
+      "status": "needs-attention",
+      "expected": "After clicking Create, the modal closes immediately and the project view loads.",
+      "observed": "Modal lingered ~600ms after the success toast appeared. I hovered the cursor as if confused before it closed.",
+      "hypothesis": "Modal close-on-success isn't tied to the toast event — likely a stale setTimeout or a missing dispatch in the modal's submit handler. Look at NewProjectModal.tsx's onSubmit.",
+      "duration_seconds": 38,
+      "video": "assets/create-first-project/video.webm",
+      "screenshots": [],
+      "notes": ""
     }
   ]
 }
 ```
 
-`status`: `pass` | `needs-attention` | `fail`. Always fill `expected` and `observed` for non-pass scenarios. The viewer renders them side-by-side.
+`status`: `pass` | `needs-attention` | `fail`. The viewer renders these as RAG balls with a one-line key.
+
+**The test for which status to assign: did the human complete the journey?**
+
+- `pass` → 🟢 *seems to work* — the human reached the goal and what they saw matched the expected experience.
+- `needs-attention` → 🟡 *learning* — the human **reached the goal**, but something was off worth telling someone about: friction, surprise, slow render, awkward copy, an animation that lingers, a recoverable error message they had to react to. They got there. Worth a second look, not blocking.
+- `fail` → 🔴 *problem* — the human **didn't reach the goal**: a click did nothing, the wrong page loaded, the app crashed, an unrecoverable error appeared, a silent failure produced the wrong outcome, or the capture itself broke (blank video, missing screenshot — the run is suspect).
+
+Sharper edge cases:
+- **Recoverable error** the user fixed and continued past → learning.
+- **Silent failure** with a "success" appearance → problem (the appearance lied).
+- **Visibly broken UI but the user got the result** → learning.
+- **Looks fine but the result is wrong** → problem.
+- **App crash mid-scenario** → problem.
+- **Capture failure** (broken video, missing screenshot, app crash before recording) → problem; mark `observed` as "couldn't capture: <what happened>" and continue.
+
+For non-pass scenarios, fill `expected`, `observed`, and `hypothesis`.
+
+**`app.name` — what to put here.** Use the most identifiable name for the project being proved. Derivation order:
+
+1. The project's own declaration: `package.json` `name`, `pyproject.toml` `[project] name`, `Cargo.toml` `[package] name`, `go.mod` module path's last segment, etc.
+2. The git remote name: `basename -s .git $(git remote get-url origin)` if there's a remote.
+3. The git repo's top-level directory name: `basename $(git rev-parse --show-toplevel)`.
+4. The current working directory's basename.
+5. Whatever the human calls it in `HUMAN_EVIDENCE.md`.
+
+Don't ship the literal string `acme-app` (it's the placeholder example) unless that's actually what the project is called.
 
 ### 6. Build the site
 
 The skill ships `templates/site/viewer.html` — a single self-contained HTML file with inline CSS and a tiny inline JS renderer. **No build step. No Python. No Node. No CDN.**
 
-1. `cp <skill-path>/templates/site/viewer.html <project>/prove-it/current/index.html`
-2. Replace the placeholder JSON inside `<script type="application/json" id="metadata">…</script>` with your real metadata (use the Edit tool — that block is the only thing you change).
-3. Open `current/index.html` to verify it renders.
+There are **two artifact files** per run, holding the same metadata in two places:
 
-The viewer is branded **Proof** in the UI — when reporting to the user, calling it "the Proof site" matches what they see. It renders a Table of Contents at the top (one row per scenario, with status pill + title + duration), then stacks scenarios as cards. Permalinks (`#slug`, `#slug--video`, `#slug--shot-NN`) jump to the right anchor with smooth scrolling and a brief highlight.
+- `current/metadata.json` — canonical, machine-readable. **The agent reads this when the human pastes a permalink back.** Always write/update this first.
+- `current/index.html` — the human-facing viewer, with a copy of `metadata.json` injected into its inline `<script type="application/json" id="metadata">` block.
+
+Build steps:
+
+1. Write `<project>/prove-it/current/metadata.json` with the full metadata object.
+2. `cp <skill-path>/templates/site/viewer.html <project>/prove-it/current/index.html`.
+3. Edit the placeholder JSON block in `index.html` to be a verbatim copy of `metadata.json`. *Both files must stay in sync — when iterating, edit both.*
+4. Open `current/index.html` to verify it renders.
+
+The viewer is branded **Prove It** in the UI — when reporting to the user, calling it "the Prove It site" matches what they see. It renders the run as a single overview table (status ball + title, with a Hypothesis sub-row for non-pass scenarios), then stacks scenario detail cards (with numbered steps + video + screenshots) below. Permalinks use a stable scheme — see "Resolving paste-back URLs" below.
 
 ### 7. Rotate the archive — fresh runs only
 
@@ -183,16 +239,27 @@ The viewer is branded **Proof** in the UI — when reporting to the user, callin
 
 ### 8. Report to the user
 
-Final message:
+Final message — keep it tight, the site is the artifact, do not paste large logs:
 
 - One sentence: what you proved.
-- Any non-pass scenarios, called out explicitly.
+- For each non-pass scenario, one line: `[status] title — hypothesis: <hypothesis lead>`.
 - Anything you couldn't prove and why.
-- The paste-back affordance: right-click `#` next to any item, copy link, paste with "expected X, this shows Y". You'll act on pinpoint feedback.
+- The paste-back affordance: right-click `#` next to any item, or use the **Copy link** button on the finding card.
 - **End with the URL on its own line, ready to click** (see "Always share the URL").
-- If anything didn't pass: use `AskUserQuestion` to ask **loop back** vs **summary only** (see "Structured questions").
 
-Don't paste large logs. The site is the artifact.
+**If anything didn't pass: immediately follow with `AskUserQuestion` listing one option per finding plus the meta-options.** Don't ask the binary loop-back-vs-summary question — that wastes a turn. Each option is named after the hypothesis lead so the human picks the *fix*, not the *finding*. Always include the meta-options last.
+
+```
+Question: "What do you want me to address?"
+Options (one per non-pass finding, then always these two at the end):
+  - Fix: <hypothesis lead from finding 1>
+       e.g. "Fix DescriptorRenderer decoration parity in cm6-mirror widget"
+  - Fix: <hypothesis lead from finding 2>
+  - Investigate further first — I'll add instrumentation or capture more scenarios before guessing
+  - Summary only — I'll stop here so you can decide
+```
+
+If only one finding, still use the structured question — the per-finding option (named after the hypothesis) is more actionable than "loop back".
 
 ## Always share the URL
 
@@ -210,13 +277,38 @@ file:///<absolute-path>/prove-it/current/index.html#fresh-doc-mixed-content
 
 Sharing the URL once at run-start and expecting the human to remember it or scroll back is a failure. Re-share every iteration. The URL is the artifact's address; without it the artifact may as well not exist.
 
+## Resolving paste-back URLs
+
+The human's primary paste-back is a permalink + a quick "expected X, this shows Y" note. Your job is to map the permalink back to the original experimental record without making them re-explain the context.
+
+**Permalink scheme (stable):**
+
+```
+file:///<project>/prove-it/current/index.html#<slug>             → scenario as a whole
+file:///<project>/prove-it/current/index.html#<slug>--video      → that scenario's video
+file:///<project>/prove-it/current/index.html#<slug>--shot-NN    → screenshot N (1-indexed, zero-padded)
+```
+
+**Lookup flow when a permalink is pasted:**
+
+1. From the URL, derive the project root: everything up to and including `prove-it/current/`.
+2. `Read current/metadata.json` (canonical source — do **not** parse `index.html`).
+3. Find the scenario whose `slug` matches the part after `#` (strip `--video` / `--shot-NN` first).
+4. From that scenario object you now have `narrative`, `expected`, `observed`, `hypothesis`, `notes`, plus the asset paths.
+5. If the anchor included `--shot-NN`, look up `scenario.screenshots[N-1]` for the asset path and caption. If `--video`, use `scenario.video`. Read the asset file directly when you need to look at it.
+6. Combine the human's "expected X, this shows Y" note with the original `expected`/`observed`/`hypothesis` to decide what to do — usually a sharper hypothesis or a fix.
+
+The metadata.json sidecar is the contract that makes the paste-back loop closed: the human's URL points at a stable record you can always look up, with the experimental context you originally captured intact.
+
 ## Iterating within a run
 
 After a first pass, the human often wants to add, refine, or remove scenarios. Treat these as **in-place edits to `current/`, not new runs**:
 
-- **Add**: capture new assets under `current/assets/<new-slug>/`, append to the `scenarios` array in the inline metadata block, re-save `index.html`.
-- **Refine**: replace assets for that slug, update its entry in the array in place.
-- **Remove**: `rm -rf current/assets/<slug>/`, drop the entry from the `scenarios` array, re-save.
+- **Add**: capture new assets under `current/assets/<new-slug>/`, append the scenario to `current/metadata.json`, then mirror the change into the inline metadata block in `current/index.html`.
+- **Refine**: replace assets for that slug, update its entry in `metadata.json` and re-mirror into `index.html`.
+- **Remove**: `rm -rf current/assets/<slug>/`, drop the entry from `metadata.json` and from the inline block in `index.html`.
+
+Always update `metadata.json` first; the inline block in `index.html` is a mirror of it. If they ever drift, regenerate `index.html` from `metadata.json` — `metadata.json` wins.
 
 Do **not** rotate the archive between iterations — that fills the 2-archive cap with intermediate states fast. Rotate only on a fresh run-from-scratch.
 
@@ -228,16 +320,16 @@ Several decision points are multiple-choice, not open-ended. Use the `AskUserQue
 
 - **Which journey to prove** — propose 3–5 concrete options as separate choices, each phrased as a user moment ("I'm writing markdown and want a link", not "test the link feature").
 - **Which driver** — Chrome MCP (default, drives your real browser) vs. Playwright (sandboxed Chromium fallback). Skip if `HUMAN_EVIDENCE.md` already records a preference.
-- **What next when something doesn't pass** — Loop back (I fix the underlying issue and re-run) vs. Summary only (I stop here, you decide).
+- **What to address when findings exist** — one option per non-pass finding (named after its hypothesis lead, e.g. "Fix DescriptorRenderer decoration parity"), plus "Investigate further first" and "Summary only" as the last two options. See section 8.
 - **Add / refine / remove a scenario** after the human reviews a run.
 
 Reserve free-text prompts for when the answer truly is open (e.g. "what's the launch command?"). When the choice space is bounded, structure it.
 
 ## When something doesn't pass, ASK the human
 
-Capture failure (blank screenshot, broken video, app crash), in-flow misbehavior, or anything surprising — record the partial evidence faithfully, mark the scenario `fail` or `needs-attention`, fill in `expected` and `observed`, and **stop.** The viewer's bottom block asks the human to choose loop-back or summary. Wait for their answer.
+Capture failure (blank screenshot, broken video, app crash), in-flow misbehavior, or anything surprising — record the partial evidence faithfully, mark the scenario `fail` or `needs-attention`, fill in `expected`, `observed`, **and `hypothesis`**, and **stop.** Then fire the per-finding `AskUserQuestion` from section 8 and wait.
 
-Do not skip, substitute, hand-edit metadata, or "fix it real quick" before reporting. The capture failure is the signal — surfacing it is the job.
+Do not skip, substitute, hand-edit metadata, or "fix it real quick" before reporting. The capture failure is the signal — surfacing it is the job. The hypothesis is *your* contribution — name the suspected cause so the human's pick is informed.
 
 ## Disk hygiene
 
@@ -278,7 +370,8 @@ In the target project:
 <project>/prove-it/
 ├── HUMAN_EVIDENCE.md                 # durable, may be committed
 ├── current/                          # latest run, gitignored
-│   ├── index.html                    # viewer.html with metadata injected
+│   ├── metadata.json                 # canonical record — what the agent reads on paste-back
+│   ├── index.html                    # viewer.html with metadata.json mirrored into the inline block
 │   └── assets/<scenario-slug>/{video,*.png}
 └── archive/                          # last 2 runs, gitignored
     ├── 2026-04-30-1015/
