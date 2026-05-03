@@ -15,7 +15,7 @@
   --text-dim: #9ca3af;
   --accent: #4f46e5;
   --pass: #16a34a;
-  --warn: #b45309;
+  --warn: #0369a1;
   --fail: #dc2626;
   --radius: 6px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -212,6 +212,12 @@ code {
   color: var(--text);
   font-size: 0.88rem;
   padding-left: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .overview tr.row-hypothesis td.hypo .hypo-label {
   font-size: 0.68rem;

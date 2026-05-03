@@ -261,9 +261,9 @@ Options (one per non-pass finding, then always these two at the end):
 
 If only one finding, still use the structured question — the per-finding option (named after the hypothesis) is more actionable than "loop back".
 
-## Always share the URL
+## Always share the URL — non-negotiable
 
-**Every message that changes `current/`** — first run, refinement, fix, anything — ends with the URL on its own line, ready to click:
+**Every message you send while this skill is active ends with the viewer URL on its own line.** First run, refinement, fix, status update, "I couldn't capture this", "what would you like next" — every one. No exceptions.
 
 ```
 file:///<absolute-path>/prove-it/current/index.html
@@ -275,7 +275,9 @@ Or anchored at a specific finding:
 file:///<absolute-path>/prove-it/current/index.html#fresh-doc-mixed-content
 ```
 
-Sharing the URL once at run-start and expecting the human to remember it or scroll back is a failure. Re-share every iteration. The URL is the artifact's address; without it the artifact may as well not exist.
+**There is no special "file location" UI component to reach for.** A `file://` URL on its own line, written as plain markdown, is exactly what becomes a clickable link in the human's terminal — that is the affordance. Don't wrap it in code fences (those make it harder to click), don't prefix it with "see:" or "open this:", don't bury it mid-paragraph. Bare URL, last line, every message.
+
+Sharing the URL once at run-start and expecting the human to remember it or scroll back is a failure. The URL is the artifact's address; without it the artifact may as well not exist. If your draft message doesn't end with a `file://` line, you are not done writing it.
 
 ## Resolving paste-back URLs
 
