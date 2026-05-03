@@ -86,7 +86,7 @@ A permission prompt or "command not found" *mid-recording* corrupts the take. Up
 - Verify the capture tools you'll use exist (e.g. `npx playwright --version`, `asciinema --version`, `which screencapture`).
 - On macOS, test screen recording with `screencapture -V 1 -v /tmp/test.mov` — if the file is a solid black/grey rectangle, Screen Recording permission is missing for the terminal/IDE running you.
 - For `computer-use`, call `request_access` for the target app now.
-- If you'll need Bash commands not yet allowlisted (`screencapture`, `asciinema`, `npx playwright`, `osascript`), ask the user to add them to `.claude/settings.json` in one batched message. The `update-config` skill can apply this.
+- If you'll need Bash commands not yet allowlisted (`screencapture`, `asciinema`, `npx playwright`, `osascript`, and the platform opener — `open` on macOS, `xdg-open` on Linux, `start` on Windows — used to auto-open the viewer at the end of every iteration), ask the user to add them to `.claude/settings.json` in one batched message. The `update-config` skill can apply this.
 
 **Ask before installing.** If a needed tool is missing, do NOT install it silently. Many capture deps are heavy (Playwright browsers are 200–400 MB; asciinema-player vendoring; ffmpeg). State what's missing and the install size, and ask the user to confirm — or offer a smaller fallback (Chrome MCP instead of Playwright, stills-only instead of video). Especially do not auto-install when the user might prefer a different driver.
 
@@ -227,7 +227,7 @@ Build steps:
 1. Write `<project>/prove-it/current/metadata.json` with the full metadata object.
 2. `cp <skill-path>/templates/site/viewer.html <project>/prove-it/current/index.html`.
 3. Edit the placeholder JSON block in `index.html` to be a verbatim copy of `metadata.json`. *Both files must stay in sync — when iterating, edit both.*
-4. Open `current/index.html` to verify it renders.
+4. Auto-open the viewer in the human's browser: `open '<project>/prove-it/current/index.html'` (macOS) — see "Always share the viewer" for cross-platform equivalents. This both verifies it renders *and* puts the report in front of them without asking them to click.
 
 The viewer is branded **Prove It** in the UI — when reporting to the user, calling it "the Prove It site" matches what they see. It renders the run as a single overview table (status ball + title, with a Hypothesis sub-row for non-pass scenarios), then stacks scenario detail cards (with numbered steps + video + screenshots) below. Permalinks use a stable scheme — see "Resolving paste-back URLs" below.
 
@@ -245,7 +245,7 @@ Final message — keep it tight, the site is the artifact, do not paste large lo
 - For each non-pass scenario, one line: `[status] title — hypothesis: <hypothesis lead>`.
 - Anything you couldn't prove and why.
 - The paste-back affordance: right-click `#` next to any item, or use the **Copy link** button on the finding card.
-- **End with the URL on its own line, ready to click** (see "Always share the URL").
+- **End with the absolute path on its own line, after auto-opening the viewer** (see "Always share the URL").
 
 **If anything didn't pass: immediately follow with `AskUserQuestion` listing one option per finding plus the meta-options.** Don't ask the binary loop-back-vs-summary question — that wastes a turn. Each option is named after the hypothesis lead so the human picks the *fix*, not the *finding*. Always include the meta-options last.
 
@@ -261,39 +261,49 @@ Options (one per non-pass finding, then always these two at the end):
 
 If only one finding, still use the structured question — the per-finding option (named after the hypothesis) is more actionable than "loop back".
 
-## Always share the URL — non-negotiable
+## Always share the viewer — non-negotiable
 
-**Every message you send while this skill is active ends with the viewer URL on its own line.** First run, refinement, fix, status update, "I couldn't capture this", "what would you like next" — every one. No exceptions.
+`file://` URLs are unreliably clickable across terminals. Don't rely on them. Instead, **every message that changes `current/` does two things, in this order:**
+
+**1. Auto-open the viewer.** Run the platform-native opener via the Bash tool, foreground, after the file is on disk:
+
+- **macOS:** `open '<project>/prove-it/current/index.html'`
+- **Linux:** `xdg-open '<project>/prove-it/current/index.html'`
+- **Windows / WSL:** `start '' '<project>\prove-it\current\index.html'` (cmd) or `wslview` (WSL)
+
+The viewer opens in the human's default browser without them having to click anything. If the `Bash(open:*)` (or equivalent) permission isn't allowlisted, ask once in step 2 (preflight) — don't surprise them mid-run.
+
+**2. End the message with the absolute path on its own line.** Bare path, no `file://` prefix, no code fence, no leading "see:" or "open this:". Just the path. Many terminals (iTerm2 cmd+click, Terminal.app Inspector) detect bare paths reliably; `file://` URLs they often don't.
 
 ```
-file:///<absolute-path>/prove-it/current/index.html
+/Users/<you>/projects/<project>/prove-it/current/index.html
 ```
 
 Or anchored at a specific finding:
 
 ```
-file:///<absolute-path>/prove-it/current/index.html#fresh-doc-mixed-content
+/Users/<you>/projects/<project>/prove-it/current/index.html#fresh-doc-mixed-content
 ```
 
-**There is no special "file location" UI component to reach for.** A `file://` URL on its own line, written as plain markdown, is exactly what becomes a clickable link in the human's terminal — that is the affordance. Don't wrap it in code fences (those make it harder to click), don't prefix it with "see:" or "open this:", don't bury it mid-paragraph. Bare URL, last line, every message.
+The path is also the addressable record for paste-back permalinks — the human can copy it, append a `#anchor`, and send it back.
 
-Sharing the URL once at run-start and expecting the human to remember it or scroll back is a failure. The URL is the artifact's address; without it the artifact may as well not exist. If your draft message doesn't end with a `file://` line, you are not done writing it.
+Sharing the path once at run-start and expecting the human to remember it or scroll back is a failure. Open the viewer **and** print the path on every iteration. If your draft message doesn't end with a bare absolute path, you are not done writing it.
 
 ## Resolving paste-back URLs
 
 The human's primary paste-back is a permalink + a quick "expected X, this shows Y" note. Your job is to map the permalink back to the original experimental record without making them re-explain the context.
 
-**Permalink scheme (stable):**
+**Permalink scheme (stable):** the address is an absolute filesystem path with an optional `#anchor`. The human may paste it as a bare path, a `file://` URL, or via the in-page **Copy link** button (which produces `file://` because that's what `window.location.href` returns) — accept all three forms.
 
 ```
-file:///<project>/prove-it/current/index.html#<slug>             → scenario as a whole
-file:///<project>/prove-it/current/index.html#<slug>--video      → that scenario's video
-file:///<project>/prove-it/current/index.html#<slug>--shot-NN    → screenshot N (1-indexed, zero-padded)
+<project>/prove-it/current/index.html#<slug>             → scenario as a whole
+<project>/prove-it/current/index.html#<slug>--video      → that scenario's video
+<project>/prove-it/current/index.html#<slug>--shot-NN    → screenshot N (1-indexed, zero-padded)
 ```
 
 **Lookup flow when a permalink is pasted:**
 
-1. From the URL, derive the project root: everything up to and including `prove-it/current/`.
+1. Strip a leading `file://` if present, then derive the project root: everything up to and including `prove-it/current/`.
 2. `Read current/metadata.json` (canonical source — do **not** parse `index.html`).
 3. Find the scenario whose `slug` matches the part after `#` (strip `--video` / `--shot-NN` first).
 4. From that scenario object you now have `narrative`, `expected`, `observed`, `hypothesis`, `notes`, plus the asset paths.
@@ -314,7 +324,7 @@ Always update `metadata.json` first; the inline block in `index.html` is a mirro
 
 Do **not** rotate the archive between iterations — that fills the 2-archive cap with intermediate states fast. Rotate only on a fresh run-from-scratch.
 
-Re-share the URL at the end of every iteration message.
+Re-open the viewer (`open …`) and re-share the absolute path at the end of every iteration message.
 
 ## Structured questions — use AskUserQuestion
 
