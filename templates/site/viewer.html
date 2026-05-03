@@ -3,25 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Proof</title>
+<title>Prove It</title>
 <style>
 :root {
   --bg: #fafafa;
   --surface: #ffffff;
   --border: #e5e7eb;
-  --border-strong: #d1d5db;
+  --rule: #f0f1f3;
   --text: #111827;
   --text-muted: #6b7280;
+  --text-dim: #9ca3af;
   --accent: #4f46e5;
-  --accent-light: #eef2ff;
-  --pass: #15803d;
-  --pass-bg: #f0fdf4;
+  --pass: #16a34a;
   --warn: #b45309;
-  --warn-bg: #fffbeb;
   --fail: #dc2626;
-  --fail-bg: #fee2e2;
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.04);
-  --shadow: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
   --radius: 6px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -38,12 +33,12 @@ body {
   background: var(--bg);
   color: var(--text);
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
 .container {
-  max-width: 64rem;
+  max-width: 56rem;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
@@ -51,24 +46,19 @@ body {
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-h1, h2, h3 { color: var(--text); line-height: 1.25; }
+h1, h2 { color: var(--text); line-height: 1.25; }
 
 code {
   font-family: var(--font-mono);
   font-size: 0.88em;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  padding: 0.08rem 0.35rem;
-  border-radius: 3px;
+  color: var(--text-muted);
 }
 
-.muted { color: var(--text-muted); }
-
-/* nav */
+/* ── Top nav ────────────────────────────────────────────────────────── */
 .site-nav {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 0.65rem 0;
+  padding: 0.55rem 0;
   position: sticky;
   top: 0;
   z-index: 50;
@@ -79,227 +69,255 @@ code {
   justify-content: space-between;
   gap: 1rem;
 }
-.nav-logo {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
+.nav-logo { font-weight: 600; font-size: 0.95rem; color: var(--text); letter-spacing: -0.01em; }
 .nav-logo:hover { text-decoration: none; }
-.nav-run {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
+.nav-meta { font-size: 0.78rem; color: var(--text-dim); font-family: var(--font-mono); }
 
-/* hero */
-.hero { padding: 2.25rem 0 1.5rem; }
+/* ── Hero — title + status text on one line ─────────────────────────── */
+.hero { padding: 1.6rem 0 1rem; }
 .hero h1 {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.015em;
-  margin: 0 0 0.25rem;
+  margin: 0;
+  display: inline;
 }
-.hero .app-version {
-  display: inline-block;
+.app-version {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-left: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
   font-weight: 400;
+  margin-left: 0.5rem;
 }
-.hero-sub {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  margin: 0 0 0.4rem;
-}
-.hero .env {
+.hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.85rem;
   font-size: 0.85rem;
-  color: var(--text-muted);
-  margin: 0 0 1rem;
+  font-weight: 500;
+  vertical-align: 1px;
 }
-.overall {
+.env-line {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin: 0.4rem 0 0;
+}
+.env-line .env-app {
+  font-family: var(--font);
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+/* ── Status balls ─ no inline text, color carries the signal ────────── */
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: -1px;
+}
+.dot.status-pass { background: var(--pass); }
+.dot.status-warn { background: var(--warn); }
+.dot.status-fail { background: var(--fail); }
+
+/* hero summary still has tiny text alongside its dot — it's the count */
+.hero-status .dot { width: 9px; height: 9px; vertical-align: 0; }
+.hero-status.status-pass { color: var(--pass); }
+.hero-status.status-warn { color: var(--warn); }
+.hero-status.status-fail { color: var(--fail); }
+
+/* ── Legend — defines the three colors once, small and quiet ────────── */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 1.5rem 0 0.7rem;
+  flex-wrap: wrap;
+}
+.legend .legend-key {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-dim);
+}
+.legend .legend-item {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.3rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-weight: 500;
-  font-size: 0.85rem;
-  background: var(--surface);
 }
-.overall::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.8;
-}
-.overall.status-pass { color: var(--pass); border-color: var(--border); background: var(--surface); }
-.overall.status-warn { color: var(--warn); border-color: var(--border); background: var(--surface); }
-.overall.status-fail { color: var(--fail); border-color: var(--fail); background: var(--fail-bg); font-weight: 600; }
+.legend .legend-item.status-pass { color: var(--pass); }
+.legend .legend-item.status-warn { color: var(--warn); }
+.legend .legend-item.status-fail { color: var(--fail); }
 
-/* counts */
-.counts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin: 0 0 1.25rem;
-}
-.count-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.75rem 1rem;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-.count-num {
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1;
-  color: var(--text-muted);
-}
-.count-label { font-size: 0.8rem; color: var(--text-muted); }
-/* Only the failed count gets a color — pass and needs-attention stay neutral. */
-.count-card.fail .count-num { color: var(--fail); }
-.count-card.fail { border-color: var(--fail-bg); }
-
-/* status pill */
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.12rem 0.55rem;
-  border-radius: 999px;
+/* ── Section labels ─────────────────────────────────────────────────── */
+.section-label {
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
   text-transform: uppercase;
-  border: 1px solid transparent;
-}
-/* Pass and needs-attention are quiet — text color only, neutral surface. */
-.status-pass { background: var(--surface); color: var(--pass); border-color: var(--border); }
-.status-warn { background: var(--surface); color: var(--warn); border-color: var(--border); }
-/* Fail is the alarm — strong fill. */
-.status-fail { background: var(--fail-bg); color: var(--fail); border-color: var(--fail); }
-
-/* feedback hint — informational, neutral */
-.feedback-hint {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.7rem 0.9rem;
-  margin: 0 0 1.25rem;
-  font-size: 0.88rem;
+  letter-spacing: 0.07em;
   color: var(--text-muted);
+  margin: 1.6rem 0 0.65rem;
 }
-.feedback-hint strong { color: var(--text); font-weight: 600; }
 
-/* findings — neutral surface; the status pills inside carry the signal */
-.findings {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.85rem 1.1rem;
-  margin: 0 0 1.25rem;
+/* ── Overview table — the lead, all scenarios in one place ──────────── */
+.overview {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
 }
-.findings h2 {
-  font-size: 0.95rem;
-  margin: 0 0 0.5rem;
+.overview th, .overview td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.6rem 0.75rem 0.6rem 0;
+}
+.overview th {
+  font-size: 0.7rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
 }
-.findings ul { list-style: none; margin: 0; padding: 0; }
-.findings li {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  padding: 0.3rem 0;
-  font-size: 0.88rem;
-  flex-wrap: wrap;
-}
-.findings li + li { border-top: 1px solid var(--border); }
-.findings .observed { color: var(--text-muted); }
+.overview td { border-bottom: 1px solid var(--rule); }
+.overview tr.row-hypothesis td { border-bottom: 1px solid var(--rule); padding-top: 0; padding-bottom: 0.7rem; }
+.overview tr.row + tr.row-hypothesis td { border-top: none; }
+.overview tr.row td { border-bottom: none; padding-bottom: 0.35rem; }
+.overview tr.row + tr.row td { padding-top: 0.7rem; border-top: 1px solid var(--rule); }
+.overview tr.row-hypothesis + tr.row td { padding-top: 0.7rem; border-top: 1px solid var(--rule); }
 
-/* TOC */
-.toc {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.85rem 1.1rem;
-  margin: 0 0 1.5rem;
-  box-shadow: var(--shadow-sm);
-}
-.toc h2 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem;
-}
-.toc ol {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.toc li {
-  display: grid;
-  grid-template-columns: 2rem auto 1fr auto;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.45rem 0;
-  font-size: 0.92rem;
-  border-top: 1px solid var(--border);
-}
-.toc li:first-child { border-top: none; padding-top: 0.25rem; }
-.toc-num {
+.overview td.num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim); width: 2.2rem; }
+.overview td.col-status { width: 1.5rem; text-align: center; padding-right: 0.6rem; }
+.overview th.col-status { text-align: center; padding-right: 0.6rem; }
+.overview td.col-title a { color: var(--text); }
+.overview td.col-title a:hover { color: var(--accent); text-decoration: none; }
+.overview td.col-duration {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-.toc-link {
-  color: var(--text);
-  text-decoration: none;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.toc-link:hover { color: var(--accent); text-decoration: underline; }
-.toc-duration {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  width: 4rem;
   text-align: right;
 }
+.overview td.col-action { width: 7rem; text-align: right; padding-right: 0; }
 
-/* scenarios */
+.overview tr.row-hypothesis td.spacer { padding: 0; }
+.overview tr.row-hypothesis td.hypo {
+  color: var(--text);
+  font-size: 0.88rem;
+  padding-left: 0;
+}
+.overview tr.row-hypothesis td.hypo .hypo-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-right: 0.5rem;
+}
+.overview tr.row-hypothesis td.hypo .hypo-label.status-warn { color: var(--warn); }
+.overview tr.row-hypothesis td.hypo .hypo-label.status-fail { color: var(--fail); }
+
+/* evidence sub-row — quick jumps to video/screenshots in the detail card */
+.overview tr.row-evidence td { padding-top: 0; padding-bottom: 0.7rem; border-bottom: none; border-top: none; }
+.overview tr.row-evidence + tr.row td { padding-top: 0.7rem; border-top: 1px solid var(--rule); }
+.overview tr.row-evidence td.evidence {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding-left: 0;
+}
+.overview tr.row-evidence td.evidence .ev-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-right: 0.5rem;
+}
+.overview tr.row-evidence td.evidence a {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  margin-right: 0.4rem;
+}
+.overview tr.row-evidence td.evidence a + a::before {
+  content: "·";
+  color: var(--text-dim);
+  margin-right: 0.4rem;
+}
+
+@media (max-width: 700px) {
+  .overview td.col-status { width: auto; }
+  .overview td.col-duration { display: none; }
+  .overview th.col-duration { display: none; }
+  .overview td.col-action { width: auto; }
+  .overview tr.row-hypothesis td.hypo { padding-left: 2.2rem; }
+}
+
+/* ── Copy link — small icon-only button ─────────────────────────────── */
+.copy-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  border-radius: 4px;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+  vertical-align: middle;
+}
+.copy-link-btn svg { width: 14px; height: 14px; display: block; }
+.copy-link-btn:hover { color: var(--accent); background: var(--rule); }
+.copy-link-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.copy-link-btn.copied { color: var(--accent); }
+.copy-link-btn.copied svg { animation: copy-pop 0.32s ease; }
+@keyframes copy-pop { 0% { transform: scale(1); } 50% { transform: scale(1.25); } 100% { transform: scale(1); } }
+
+/* permalink (anchor #) */
+.permalink {
+  color: var(--text-dim);
+  font-weight: 500;
+  font-size: 0.85em;
+  font-family: var(--font-mono);
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.12s, color 0.12s;
+  padding: 0 0.15rem;
+}
+.permalink:hover, .permalink:focus { opacity: 1; color: var(--accent); text-decoration: none; }
+
+/* ── Scenario detail — light card, tables inside ────────────────────── */
 .scenarios { margin: 0 0 1.5rem; }
 .scenario {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.25rem 1.5rem;
-  margin: 0 0 1.25rem;
-  box-shadow: var(--shadow-sm);
-  scroll-margin-top: 5rem;
+  padding: 1.1rem 1.4rem;
+  margin: 0 0 1rem;
+  scroll-margin-top: 4.5rem;
 }
 .scenario:target {
   border-color: var(--accent);
-  box-shadow: var(--shadow), 0 0 0 3px var(--accent-light);
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.12);
 }
 .scenario-head {
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
   flex-wrap: wrap;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.6rem;
 }
 .scenario-head h2 {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 600;
   margin: 0;
   flex: 1 1 auto;
@@ -307,33 +325,40 @@ code {
 }
 .scenario-head .duration {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  font-size: 0.78rem;
+  color: var(--text-dim);
 }
-.narrative { margin: 0 0 0.85rem; color: var(--text); }
+.narrative {
+  margin: 0 0 0.6rem;
+  color: var(--text);
+  font-size: 0.93rem;
+}
 
-/* expected / observed */
-.exp-obs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin: 0.85rem 0;
-  font-size: 0.9rem;
+/* numbered steps inside scenario card — limited chrome */
+.steps { margin: 0.6rem 0 0.8rem; }
+.step { margin: 0.7rem 0 0; }
+.step:first-child { margin-top: 0; }
+.step h3 {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 0 0 0.2rem;
 }
-@media (max-width: 700px) { .exp-obs { grid-template-columns: 1fr; } }
-.exp, .obs {
-  padding: 0.65rem 0.85rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
+.step h3 .step-num {
+  display: inline-block;
+  width: 1.3rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-weight: 500;
 }
-.exp { border-left: 3px solid var(--border-strong); }
-.exp strong { color: var(--text); font-weight: 600; }
-.obs { border-left: 3px solid var(--text-muted); }
-.obs strong { color: var(--text); font-weight: 600; }
+.step h3.status-warn { color: var(--warn); }
+.step h3.status-fail { color: var(--fail); }
+.step p { margin: 0; font-size: 0.93rem; color: var(--text); padding-left: 1.3rem; }
 
 /* video */
-.video-figure { margin: 0.85rem 0 1rem; scroll-margin-top: 5rem; }
+.video-figure { margin: 0.9rem 0 0.5rem; scroll-margin-top: 4.5rem; }
 .video-figure video {
   width: 100%;
   max-width: 56rem;
@@ -343,26 +368,23 @@ code {
   border-radius: var(--radius);
 }
 .video-figure figcaption {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
-  margin-top: 0.35rem;
+  margin-top: 0.3rem;
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
-.video-figure:target video {
-  outline: 3px solid var(--accent-light);
-  outline-offset: 2px;
-}
+.video-figure:target video { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* screenshots */
 .shots {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.85rem;
-  margin: 0.5rem 0 0.85rem;
+  gap: 0.7rem;
+  margin: 0.7rem 0 0.4rem;
 }
-.shot { margin: 0; scroll-margin-top: 5rem; }
+.shot { margin: 0; scroll-margin-top: 4.5rem; }
 .shot a { display: block; }
 .shot img {
   width: 100%;
@@ -373,76 +395,38 @@ code {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   transition: border-color 0.12s ease;
-  color: transparent; /* hides alt-text noise if a browser still renders it */
+  color: transparent;
 }
-.shot a:hover img { border-color: var(--border-strong); }
+.shot a:hover img { border-color: var(--text-dim); }
 .shot:target img {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-light);
+  box-shadow: 0 0 0 2px rgb(79 70 229 / 0.18);
 }
 .shot figcaption {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
-  margin-top: 0.35rem;
+  margin-top: 0.3rem;
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
 
-/* notes — neutral, just a thin gray accent */
+/* notes */
 .notes {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--border-strong);
-  border-radius: var(--radius);
-  padding: 0.6rem 0.85rem;
-  margin: 0.85rem 0 0;
-  font-size: 0.88rem;
+  margin: 0.7rem 0 0;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.85rem;
   color: var(--text-muted);
 }
 .notes strong { color: var(--text); font-weight: 600; }
 
-/* permalink */
-.permalink {
+.paste-hint {
+  font-size: 0.78rem;
   color: var(--text-muted);
-  font-weight: 500;
-  font-size: 0.85em;
-  font-family: var(--font-mono);
-  text-decoration: none;
-  opacity: 0.4;
-  transition: opacity 0.12s ease, color 0.12s ease;
-  padding: 0 0.15rem;
-}
-.permalink:hover, .permalink:focus {
-  opacity: 1;
-  color: var(--accent);
-  text-decoration: none;
+  margin: 0.85rem 0 0;
 }
 
-/* next step — neutral; the question is about decision-making, not alarm */
-.next-step {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--border-strong);
-  border-radius: var(--radius);
-  padding: 1.1rem 1.4rem;
-  margin: 0 0 1.5rem;
-}
-.next-step h2 {
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin: 0 0 0.4rem;
-}
-.next-step p { margin: 0.4rem 0; font-size: 0.92rem; }
-.next-step ol {
-  margin: 0.6rem 0;
-  padding-left: 1.4rem;
-  font-size: 0.92rem;
-}
-.next-step li { margin: 0.3rem 0; }
-.next-step strong { color: var(--text); font-weight: 600; }
-
-/* empty / error */
 .empty, .error { text-align: center; padding: 3rem 1rem; }
 .empty h1, .error h1 {
   font-size: 1.75rem;
@@ -454,16 +438,16 @@ code {
 .empty code, .error code { display: inline-block; margin-top: 0.5rem; }
 .error p { color: var(--fail); }
 
-/* footer */
 footer {
   border-top: 1px solid var(--border);
   padding: 1.25rem 0;
   text-align: center;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-top: 2rem;
 }
 
-/* lightbox / carousel */
+/* lightbox */
 .lightbox {
   position: fixed;
   inset: 0;
@@ -522,7 +506,7 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.12s ease, border-color 0.12s ease;
+  transition: background 0.12s, border-color 0.12s;
   position: absolute;
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
@@ -531,14 +515,8 @@ footer {
   background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.32);
 }
-.lb-btn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.lb-btn[disabled] {
-  opacity: 0.3;
-  cursor: default;
-}
+.lb-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lb-btn[disabled] { opacity: 0.3; cursor: default; }
 .lb-close { top: 1rem; right: 1rem; }
 .lb-prev  { top: 50%; left: 1rem;  transform: translateY(-50%); }
 .lb-next  { top: 50%; right: 1rem; transform: translateY(-50%); }
@@ -550,31 +528,46 @@ footer {
 }
 
 @media (max-width: 768px) {
-  .hero { padding: 1.75rem 0 1rem; }
-  .hero h1 { font-size: 1.5rem; }
-  .counts { grid-template-columns: 1fr; }
-  .scenario { padding: 1rem 1.1rem; }
-  .toc li { grid-template-columns: 1.5rem auto 1fr; }
-  .toc-duration { display: none; }
+  .hero { padding: 1.25rem 0 0.85rem; }
+  .hero h1 { font-size: 1.35rem; }
+  .scenario { padding: 0.95rem 1.05rem; }
 }
+
+.toast {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: var(--text);
+  color: white;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.25);
+  opacity: 0;
+  transition: opacity 0.18s, transform 0.18s;
+  pointer-events: none;
+  z-index: 200;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
 <header class="site-nav">
   <div class="container nav-inner">
-    <a href="#top" class="nav-logo">Proof</a>
-    <span class="nav-run" id="navRun"></span>
+    <a href="#top" class="nav-logo">Prove It</a>
+    <span class="nav-meta" id="navRun"></span>
   </div>
 </header>
 
 <main id="top">
-  <div id="root"><div class="empty"><h1>Proof</h1><p>Loading…</p></div></div>
+  <div id="root"><div class="empty"><h1>Prove It</h1><p>Loading…</p></div></div>
 </main>
 
 <footer>
   <div class="container">
-    <p>Generated by the <a href="https://github.com/dvhthomas/prove-it">prove-it</a> skill. Open this page directly via <code>file://</code> — no server required.</p>
+    <p>Generated by the <a href="https://github.com/dvhthomas/prove-it">prove-it</a> skill. Open via <code>file://</code> — no server required.</p>
   </div>
 </footer>
 
@@ -589,11 +582,13 @@ footer {
   <button class="lb-btn lb-next" id="lbNext" type="button" aria-label="Next (→)">›</button>
 </div>
 
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <script type="application/json" id="metadata">
 {
   "_placeholder": true,
   "run_id": "(not yet populated)",
-  "app": { "name": "Proof viewer", "version": "", "url_or_command": "" },
+  "app": { "name": "Prove It", "version": "", "url_or_command": "" },
   "environment": { "os": "", "browser": "" },
   "scenarios": []
 }
@@ -604,9 +599,9 @@ footer {
   "use strict";
 
   var STATUS = {
-    "pass":            { cls: "pass", label: "Pass" },
-    "needs-attention": { cls: "warn", label: "Needs attention" },
-    "fail":            { cls: "fail", label: "Fail" }
+    "pass":            { cls: "pass", label: "seems to work", noun: "seems to work", plural: "seem to work" },
+    "needs-attention": { cls: "warn", label: "learning",      noun: "learning",      plural: "learnings" },
+    "fail":            { cls: "fail", label: "problem",       noun: "problem",       plural: "problems" }
   };
 
   function esc(s) {
@@ -620,17 +615,60 @@ footer {
     return '<a class="permalink" href="#' + esc(anchor) + '" title="Copy link to this ' + esc(label) + '">#</a>';
   }
 
+  var COPY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+  var CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+  function copyBtn(anchor, label) {
+    var t = "Copy link to this " + label + " — paste into chat with what you expected";
+    return '<button type="button" class="copy-link-btn" data-anchor="' + esc(anchor) +
+           '" aria-label="' + esc(t) + '" title="' + esc(t) + '">' + COPY_SVG + '</button>';
+  }
+
+  function statusDot(status) {
+    var st = STATUS[status] || STATUS.pass;
+    var label = esc(st.label);
+    return '<span class="dot status-' + st.cls + '" role="img" aria-label="' + label + '" title="' + label + '"></span>';
+  }
+
+  function statusCls(status) {
+    var st = STATUS[status] || STATUS.pass;
+    return st.cls;
+  }
+
   function pad2(n) { return n < 10 ? "0" + n : "" + n; }
 
   function renderEmpty() {
     return (
       '<div class="empty">' +
-      '<h1>Proof</h1>' +
+      '<h1>Prove It</h1>' +
       '<p>This is the bare viewer template. Replace the JSON inside ' +
       '<code>&lt;script type="application/json" id="metadata"&gt;</code> ' +
       "with your run's real metadata, then reload.</p>" +
       "</div>"
     );
+  }
+
+  function renderOverviewRow(s, i) {
+    var slug = esc(s.slug || "scenario-" + (i + 1));
+    var title = esc(s.title || s.slug || "Scenario " + (i + 1));
+    var hypothesis = esc(s.hypothesis || "");
+    var nonPass = s.status !== "pass";
+    var sCls = statusCls(s.status);
+
+    var html = '<tr class="row">';
+    html += '<td class="num">' + pad2(i + 1) + '</td>';
+    html += '<td class="col-status">' + statusDot(s.status) + '</td>';
+    html += '<td class="col-title"><a href="#' + slug + '">' + title + '</a></td>';
+    html += '<td class="col-action">' + (nonPass ? copyBtn(slug, "finding") : "") + '</td>';
+    html += '</tr>';
+
+    if (nonPass && hypothesis) {
+      html += '<tr class="row-hypothesis">';
+      html += '<td class="spacer"></td>';
+      html += '<td class="hypo" colspan="3"><span class="hypo-label status-' + sCls + '">Hypothesis</span>' + hypothesis + '</td>';
+      html += '</tr>';
+    }
+    return html;
   }
 
   function renderScenario(s) {
@@ -640,22 +678,36 @@ footer {
     var notes = esc(s.notes || "");
     var expected = esc(s.expected || "");
     var observed = esc(s.observed || "");
+    var hypothesis = esc(s.hypothesis || "");
     var dur = (typeof s.duration_seconds === "number") ? Math.round(s.duration_seconds) + "s" : "";
-    var st = STATUS[s.status] || STATUS.pass;
+
+    var sCls = statusCls(s.status);
 
     var html = '<article class="scenario" id="' + slug + '">';
     html += '<header class="scenario-head">';
-    html += '<span class="status status-' + st.cls + '">' + st.label + "</span>";
-    html += "<h2>" + title + " " + permalink(slug, "scenario") + "</h2>";
-    if (dur) html += '<span class="duration">' + dur + "</span>";
-    html += "</header>";
-    if (narrative) html += '<p class="narrative">' + narrative + "</p>";
+    html += statusDot(s.status);
+    html += '<h2>' + title + '</h2>';
+    if (dur) html += '<span class="duration">' + dur + '</span>';
+    html += copyBtn(slug, "scenario");
+    html += permalink(slug, "scenario");
+    html += '</header>';
 
-    if (expected || observed) {
-      html += '<div class="exp-obs">';
-      if (expected) html += '<div class="exp"><strong>Expected:</strong> ' + expected + "</div>";
-      if (observed) html += '<div class="obs"><strong>Observed:</strong> ' + observed + "</div>";
-      html += "</div>";
+    // numbered steps: 1. Action, 2. Expected, 3. Observed, 4. Hypothesis (if any)
+    var steps = [];
+    if (narrative)  steps.push({ label: "Action",     body: narrative });
+    if (expected)   steps.push({ label: "Expected",   body: expected });
+    if (observed)   steps.push({ label: "Observed",   body: observed });
+    if (hypothesis) steps.push({ label: "Hypothesis", body: hypothesis, cls: "status-" + sCls });
+    if (steps.length) {
+      html += '<div class="steps">';
+      steps.forEach(function (st, idx) {
+        var clsAttr = st.cls ? ' class="' + st.cls + '"' : "";
+        html += '<section class="step">';
+        html += '<h3' + clsAttr + '><span class="step-num">' + (idx + 1) + '.</span>' + st.label + '</h3>';
+        html += '<p>' + st.body + '</p>';
+        html += '</section>';
+      });
+      html += '</div>';
     }
 
     if (s.video) {
@@ -663,10 +715,10 @@ footer {
       var vId = slug + "--video";
       html += '<figure id="' + vId + '" class="video-figure">';
       html += '<video controls preload="metadata" src="' + v + '">';
-      html += 'Your browser cannot play this video. Open <a href="' + v + '">' + v + "</a> directly.";
-      html += "</video>";
-      html += '<figcaption><span>Video</span> ' + permalink(vId, "video") + "</figcaption>";
-      html += "</figure>";
+      html += 'Your browser cannot play this video. Open <a href="' + v + '">' + v + '</a> directly.';
+      html += '</video>';
+      html += '<figcaption><span>Video</span> ' + permalink(vId, "video") + '</figcaption>';
+      html += '</figure>';
     }
 
     var shots = s.screenshots || [];
@@ -679,14 +731,14 @@ footer {
         html += '<figure class="shot" id="' + sid + '">';
         html += '<a href="' + file + '" target="_blank" aria-label="Open screenshot: ' + caption + '">';
         html += '<img src="' + file + '" alt="" loading="lazy"></a>';
-        html += '<figcaption><span>' + caption + "</span> " + permalink(sid, "screenshot") + "</figcaption>";
-        html += "</figure>";
+        html += '<figcaption><span>' + caption + '</span> ' + permalink(sid, "screenshot") + '</figcaption>';
+        html += '</figure>';
       });
-      html += "</div>";
+      html += '</div>';
     }
 
-    if (notes) html += '<p class="notes"><strong>Notes:</strong> ' + notes + "</p>";
-    html += "</article>";
+    if (notes) html += '<p class="notes"><strong>Notes:</strong> ' + notes + '</p>';
+    html += '</article>';
     return html;
   }
 
@@ -701,9 +753,14 @@ footer {
     });
 
     var overall;
-    if (counts.fail) overall = { cls: "fail", label: counts.fail + " failed" };
-    else if (counts["needs-attention"]) overall = { cls: "warn", label: counts["needs-attention"] + " need attention" };
-    else overall = { cls: "pass", label: "All scenarios passed" };
+    if (counts.fail) {
+      overall = { cls: "fail", label: counts.fail + " " + (counts.fail === 1 ? "problem" : "problems") };
+    } else if (counts["needs-attention"]) {
+      var n = counts["needs-attention"];
+      overall = { cls: "warn", label: n + " " + (n === 1 ? "learning" : "learnings") };
+    } else {
+      overall = { cls: "pass", label: scenarios.length === 1 ? "seems to work" : "all " + scenarios.length + " seem to work" };
+    }
 
     var app = meta.app || {};
     var env = meta.environment || {};
@@ -714,88 +771,51 @@ footer {
 
     var html = "";
 
+    // ── Hero — H1 is the app being proved; "Prove It" identity lives in the nav
     html += '<section class="hero"><div class="container">';
-    html += "<h1>" + esc(app.name || "Proof");
-    if (app.version) html += '<span class="app-version">' + esc(app.version) + "</span>";
-    html += "</h1>";
-    html += '<p class="hero-sub">run <code>' + esc(meta.run_id || "") + "</code></p>";
+    html += '<h1>' + esc(app.name || "Prove It") + '</h1>';
+    if (app.version) html += '<span class="app-version">' + esc(app.version) + '</span>';
+    html += '<span class="hero-status status-' + overall.cls + '"><span class="dot"></span>' + esc(overall.label) + '</span>';
+
     var envBits = [];
     if (env.os) envBits.push(esc(env.os));
     if (env.browser) envBits.push(esc(env.browser));
-    if (app.url_or_command) envBits.push("target <code>" + esc(app.url_or_command) + "</code>");
-    if (envBits.length) html += '<p class="env">' + envBits.join(" · ") + "</p>";
-    html += '<div class="overall status-' + overall.cls + '">' + esc(overall.label) + "</div>";
-    html += "</div></section>";
+    if (meta.run_id) envBits.push('run <code>' + esc(meta.run_id) + '</code>');
+    if (envBits.length) html += '<p class="env-line">' + envBits.join(' · ') + '</p>';
+    html += '</div></section>';
 
     html += '<section><div class="container">';
 
-    // counts
-    html += '<div class="counts">';
-    html += '<div class="count-card pass"><span class="count-num">' + counts.pass + '</span><span class="count-label">passed</span></div>';
-    html += '<div class="count-card warn"><span class="count-num">' + counts["needs-attention"] + '</span><span class="count-label">need attention</span></div>';
-    html += '<div class="count-card fail"><span class="count-num">' + counts.fail + '</span><span class="count-label">failed</span></div>';
-    html += "</div>";
+    // ── Legend — defines the three colors once
+    html += '<div class="legend">';
+    html += '<span class="legend-key">Key</span>';
+    html += '<span class="legend-item status-fail"><span class="dot status-fail"></span>problems</span>';
+    html += '<span class="legend-item status-warn"><span class="dot status-warn"></span>learnings</span>';
+    html += '<span class="legend-item status-pass"><span class="dot status-pass"></span>seems to work</span>';
+    html += '</div>';
 
-    // feedback hint
-    html += '<div class="feedback-hint"><strong>Want to give precise feedback?</strong> Right-click the <code>#</code> next to any scenario, video, or screenshot, copy the link, and paste it back into our conversation with what you expected.</div>';
+    // ── Single overview table — every scenario, with hypothesis sub-row for non-pass
+    html += '<table class="overview">';
+    html += '<thead><tr>';
+    html += '<th></th>';
+    html += '<th class="col-status" aria-label="Status"></th>';
+    html += '<th>Scenario</th>';
+    html += '<th></th>';
+    html += '</tr></thead>';
+    html += '<tbody>';
+    scenarios.forEach(function (s, i) { html += renderOverviewRow(s, i); });
+    html += '</tbody></table>';
 
-    // findings
-    if (hasIssues) {
-      html += '<div class="findings"><h2>Things that need your attention</h2><ul>';
-      scenarios.forEach(function (s) {
-        if (s.status === "pass") return;
-        var st = STATUS[s.status] || STATUS.pass;
-        var slug = esc(s.slug || "scenario");
-        var title = esc(s.title || s.slug || "Scenario");
-        var observed = s.observed ? '<span class="observed">— ' + esc(s.observed) + "</span>" : "";
-        html += '<li><span class="status status-' + st.cls + '">' + st.label + "</span>";
-        html += '<a href="#' + slug + '">' + title + "</a>" + observed + "</li>";
-      });
-      html += "</ul></div>";
-    }
-
-    // TOC
-    html += '<nav class="toc" aria-label="Scenarios"><h2>Scenarios</h2><ol>';
-    scenarios.forEach(function (s, i) {
-      var slug = esc(s.slug || "scenario-" + (i + 1));
-      var title = esc(s.title || s.slug || "Scenario " + (i + 1));
-      var dur = (typeof s.duration_seconds === "number") ? Math.round(s.duration_seconds) + "s" : "";
-      var st = STATUS[s.status] || STATUS.pass;
-      html += "<li>";
-      html += '<span class="toc-num">' + pad2(i + 1) + "</span>";
-      html += '<span class="status status-' + st.cls + '">' + st.label + "</span>";
-      html += '<a class="toc-link" href="#' + slug + '">' + title + "</a>";
-      html += '<span class="toc-duration">' + (dur || "") + "</span>";
-      html += "</li>";
-    });
-    html += "</ol></nav>";
-
-    // scenarios stacked
+    // ── Scenario detail cards (full steps + media, anchored)
     html += '<div class="scenarios">';
-    scenarios.forEach(function (s) {
-      html += renderScenario(s);
-    });
-    html += "</div>";
-
-    // next step
-    if (hasIssues) {
-      var n = counts.fail + counts["needs-attention"];
-      html += '<div class="next-step">';
-      html += "<h2>What do you want me to do next?</h2>";
-      html += "<p>" + n + " scenario(s) didn't pass cleanly. Two options:</p>";
-      html += "<ol>";
-      html += "<li><strong>Loop back</strong> — I take the failures and fix the underlying issues, then re-run this skill from scratch.</li>";
-      html += "<li><strong>Summary only</strong> — I write up what I found and stop, so you can decide what to do.</li>";
-      html += "</ol>";
-      html += '<p class="muted">For precise feedback, right-click the <code>#</code> next to any item above, copy the link, and paste it back with what you expected.</p>';
-      html += "</div>";
-    }
+    scenarios.forEach(function (s) { html += renderScenario(s); });
+    html += '</div>';
 
     html += "</div></section>";
     return html;
   }
 
-  // ── Lightbox / carousel ────────────────────────────────────────────────
+  // ── Lightbox ───────────────────────────────────────────────────────────
   var lb = {
     el:      document.getElementById("lightbox"),
     img:     document.getElementById("lbImg"),
@@ -819,7 +839,6 @@ footer {
     lb.counter.textContent = (lb.index + 1) + " / " + lb.shots.length;
     lb.prevBtn.disabled = lb.index === 0;
     lb.nextBtn.disabled = lb.index === lb.shots.length - 1;
-    // update hash so right-click on the lightbox preserves a useful permalink to the figure
     var fid = fig.id;
     if (fid && location.hash !== "#" + fid) {
       history.replaceState(null, "", "#" + fid);
@@ -849,7 +868,6 @@ footer {
   function attachLightbox() {
     document.querySelectorAll(".shot a").forEach(function (a) {
       a.addEventListener("click", function (e) {
-        // let modifier-clicks open in new tab as before, and let middle-click pass
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
         e.preventDefault();
         var fig = a.closest(".shot");
@@ -864,15 +882,70 @@ footer {
     lb.closeBtn.addEventListener("click", lbClose);
     lb.prevBtn.addEventListener("click", lbPrev);
     lb.nextBtn.addEventListener("click", lbNext);
-    lb.el.addEventListener("click", function (e) {
-      // backdrop click closes; clicks on inner controls/img don't bubble through here
-      if (e.target === lb.el) lbClose();
-    });
+    lb.el.addEventListener("click", function (e) { if (e.target === lb.el) lbClose(); });
     window.addEventListener("keydown", function (e) {
       if (!lb.el.classList.contains("open")) return;
-      if (e.key === "Escape")     { e.preventDefault(); lbClose(); }
+      if (e.key === "Escape")          { e.preventDefault(); lbClose(); }
       else if (e.key === "ArrowRight") { e.preventDefault(); lbNext(); }
       else if (e.key === "ArrowLeft")  { e.preventDefault(); lbPrev(); }
+    });
+  }
+
+  // ── Copy-link buttons ──────────────────────────────────────────────────
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  function flashToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 1600);
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    ta.style.pointerEvents = "none";
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(
+        function () { return true; },
+        function () { return fallbackCopy(text); }
+      );
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+
+  function attachCopyButtons() {
+    document.querySelectorAll(".copy-link-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var anchor = btn.getAttribute("data-anchor") || "";
+        var base = window.location.href.split("#")[0];
+        var url = base + (anchor ? "#" + anchor : "");
+        Promise.resolve(copyToClipboard(url)).then(function (ok) {
+          if (ok) {
+            btn.classList.add("copied");
+            var orig = btn.innerHTML;
+            btn.innerHTML = CHECK_SVG;
+            flashToast("Link copied — paste into chat with what you expected");
+            setTimeout(function () {
+              btn.classList.remove("copied");
+              btn.innerHTML = orig;
+            }, 1600);
+          } else {
+            flashToast("Couldn't copy — select the URL bar and copy manually");
+          }
+        });
+      });
     });
   }
 
@@ -881,12 +954,13 @@ footer {
     var meta = JSON.parse(raw);
     document.getElementById("root").innerHTML = render(meta);
     if (meta && meta.app && meta.app.name && !meta._placeholder) {
-      document.title = "Proof · " + meta.app.name + (meta.run_id ? " · " + meta.run_id : "");
+      document.title = "Prove It · " + meta.app.name + (meta.run_id ? " · " + meta.run_id : "");
     }
     attachLightbox();
+    attachCopyButtons();
   } catch (e) {
     document.getElementById("root").innerHTML =
-      '<div class="error"><h1>Proof</h1><p>Failed to render metadata: ' +
+      '<div class="error"><h1>Prove It</h1><p>Failed to render metadata: ' +
       String(e && e.message ? e.message : e).replace(/</g, "&lt;") + "</p></div>";
   }
 })();
