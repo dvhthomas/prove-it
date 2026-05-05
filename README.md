@@ -1,5 +1,19 @@
 # prove-it
 
+> ## ⚠️ This repo has moved
+>
+> `prove-it` is now distributed as part of the **[dvhthomas/claude-skills](https://github.com/dvhthomas/claude-skills)** marketplace, alongside other personal skills.
+>
+> **New install:**
+> ```
+> /plugin marketplace add dvhthomas/claude-skills
+> /plugin install prove-it@claude-skills
+> ```
+>
+> This repository is **archived** and will no longer receive updates. Existing installs that cloned this repo directly will keep working, but to get future fixes please reinstall from the marketplace above.
+
+---
+
 A Claude Code skill that proves an interactive UI works by **driving it at a human pace** through a real environment — a real browser, a real terminal, a real launchable app — and producing a self-contained static evidence site (the **Prove It** viewer) the human reviewer can open and scrub through.
 
 > "I ran all the tests. Now let me prove a human will have the experience you expect."
